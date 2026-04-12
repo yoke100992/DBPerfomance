@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>Dashboard Auto CSV</title>
+
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* STYE CHART #### */.chart-box {
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+/* STYE SCORECARD #### */
+body {
+  margin: 0;           /* 🔥 ini kunci utama */
+  font-family: Segoe UI;
+  background:#f4f4f4;
+  padding: 20px;       /* tetap boleh ada */
+}
+#kpi {
+  display: grid;
+  grid-auto-flow: column;        /* 🔥 susun ke samping */
+  grid-auto-columns: max-content;/* 🔥 lebar sesuai isi */
+  justify-content: center;       /* 🔥 center semua */
+  gap: 12px;
+}
+.header {
+  width: calc(100% + 40px);
+  margin-left: -20px;
+  margin-right: -20px;
+
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+  color: white;
+  padding: 14px 20px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 0 0 10px 10px; /* opsional biar bawah saja rounded */
+  margin: -20px -20px 15px -20px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+.card {
+  background:white;
+  padding:12px 16px; /* 🔥 kasih napas kiri kanan */
+  border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  text-align:left;
+  min-width: 220px; /* 🔥 biar ga terlalu kecil */
+ 
+}
+.card-title {
+  font-size:11px;
+  color:#6c757d;
+  margin-bottom:5px;
+}
+
+.card-body {
+  font-size:20px;
+  font-weight:bold;
+  color:#0b7285;
+  margin-bottom:4px;
+  flex-direction:column;
+  align-items:center;
+}
+
+.card-footer {
+  font-size:11px;
+  color:#6c757d;
+}
+
+/* STYE FILTER #### */
+.filter-bar {
+  display: flex;
+  gap: 8px;              /* 🔥 rapat */
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.filter-bar select {
+  padding: 6px 10px;     /* 🔥 lebih kecil */
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  background: white;
+  font-size: 12px;
+  width: auto;           /* 🔥 tidak kepanjangan */
+  min-width: 90px;       /* 🔥 tetap readable */
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* hover */
+.filter-bar select:hover {
+  border-color: #74c0fc;
+}
+
+/* focus */
+.filter-bar select:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  📊 SMD Team Management Dashboard
+</div>
+
+<!-- KPI -->
+<div id="kpi"></div>
+<br>
+<!-- FILTER -->
+<div class="filter-bar">
+  <select id="filterYear"></select>
+  <select id="filterMonth"></select>
+</div>
+
+<!-- CHART -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px;">
+
+  <!-- ROW 1 -->
+  <div class="chart-box">
+    <canvas id="chartTopFL"></canvas>
+  </div>
+
+  <div class="chart-box">
+    <canvas id="chartConv"></canvas>
+  </div>
+
+  <!-- ROW 2 -->
+  <div class="chart-box">
+    <canvas id="chartBubble"></canvas>
+  </div>
+
+  <div class="chart-box">
+    <canvas id="chartSoldVisited"></canvas>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+function safeDate(value) {
+  const d = new Date(value);
+  return d instanceof Date && !isNaN(d.getTime()) ? d : null;
+}
+
+function format3(num) {
+  num = Number(num) || 0;
+
+  if (num >= 1e9) return (num/1e9).toFixed(2) + " M";
+  if (num >= 1e6) return (num/1e6).toFixed(2) + " Jt";
+  if (num >= 1e3) return (num/1e3).toFixed(2) + " Rb";
+  return num.toFixed(2);
+}
+
+function format(num) {
+  if (num>=1e9) return (num/1e9).toFixed(1)+" M";
+  if (num>=1e6) return (num/1e6).toFixed(1)+" Jt";
+  if (num>=1e3) return (num/1e3).toFixed(1)+" Rb";
+  return num;
+}
+
+let DATA = [];
+let PD = [];
+
+// ===== AUTO LOAD =====
+window.onload = function() {
+  loadCSV();
+};
+
+function loadCSV() {
+  Papa.parse("data.csv", {
+    download: true,
+    header: true,
+    skipEmptyLines: true,   // 🔥 penting
+    complete: res => {
+
+      DATA = res.data.filter(r =>
+        r &&
+        Object.keys(r).length > 0 &&
+        r["Tanggal"] &&
+        r["Outlet ID"]
+      );
+
+      Papa.parse("pd.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: res2 => {
+
+          PD = res2.data.filter(r =>
+            r &&
+            r["Outlet ID"]
+          );
+
+          initFilter();
+          render();
+        }
+      });
+    }
+  });
+}
+function cleanKeys(row) {
+  const cleaned = {};
+  Object.keys(row).forEach(k => {
+    cleaned[k.trim()] = row[k];
+  });
+  return cleaned;
+}
+
+// ===== FILTER =====
+function initFilter() {
+  const years = new Set();
+  const months = new Set();
+
+  DATA.forEach(r => {
+    const d = safeDate(r["Tanggal"]);
+    if (d) {
+      years.add(d.getFullYear());
+      months.add(d.getMonth()+1);
+    }
+  });
+
+  document.getElementById("filterYear").innerHTML =
+    '<option value="">Year</option>' +
+    [...years].map(y=>`<option>${y}</option>`).join("");
+
+  document.getElementById("filterMonth").innerHTML =
+    '<option value="">Month</option>' +
+    [...months].map(m=>`<option>${m}</option>`).join("");
+
+  document.getElementById("filterYear").onchange = render;
+  document.getElementById("filterMonth").onchange = render;
+}
+
+// ===== FILTER DATA =====
+function applyFilter(arr) {
+  const y = document.getElementById("filterYear").value;
+  const m = document.getElementById("filterMonth").value;
+
+  return arr.filter(r => {
+    const d = safeDate(r["Tanggal"]);
+    if (!d) return false;
+
+    return (!y || d.getFullYear() == y) &&
+           (!m || (d.getMonth()+1) == m);
+  });
+}
+
+// ===== NEW OUTLET =====
+function getNewOutlet(data) {
+  const sorted = data
+    .filter(r => r["Tanggal"])
+    .sort((a,b) => new Date(a["Tanggal"]) - new Date(b["Tanggal"]));
+
+  const seen = new Set();
+  const newOutletByDay = {};
+
+  sorted.forEach(r => {
+    const date = safeDate(r["Tanggal"]);
+    if (!date) return;
+
+    const dayKey = date.toISOString().split('T')[0];
+    const outlet = r["Outlet ID"];
+
+    if (!newOutletByDay[dayKey]) {
+      newOutletByDay[dayKey] = new Set();
+    }
+
+    if (!seen.has(outlet)) {
+      seen.add(outlet);
+      newOutletByDay[dayKey].add(outlet);
+    }
+  });
+
+  return newOutletByDay;
+}
+
+// ===== MAIN RENDER =====
+function render() {
+
+  const newOutletMap = getNewOutlet(DATA);
+
+ const validDates = DATA
+  .map(r => safeDate(r["Tanggal"]))
+  .filter(d => d instanceof Date && !isNaN(d));
+
+if (validDates.length === 0) return;
+
+// ambil tanggal max yang valid
+const maxTime = Math.max(...validDates.map(d => d.getTime()));
+
+if (!isFinite(maxTime)) return;
+
+const todayKey = new Date(maxTime).toISOString().split('T')[0];
+
+  const newOutletToday = newOutletMap[todayKey]
+    ? newOutletMap[todayKey].size
+    : 0;
+
+  const data = applyFilter(DATA);
+  const pd = applyFilter(PD);
+
+  const fl = new Set(data.map(r=>r["ID Frontliner"])).size;
+
+  const revenue = data.reduce((t,r)=>{
+    let v = r["Value"] || 0;
+    v = Number(v.toString().replace(/[^0-9]/g,''));
+    return t + (isNaN(v)?0:v);
+  },0);
+
+  const outletData = new Set(data.map(r=>r["Outlet ID"]));
+  const outletPD = new Set(pd.map(r=>r["Outlet ID"]));
+
+  const covered = outletData.size;
+  const registered = outletPD.size;
+
+  const conversion = registered ? ((covered/registered)*100).toFixed(1) : 0;
+
+  document.getElementById("kpi").innerHTML = `
+    <div class="card">
+      <div class="card-title">TOTAL REVENUE</div>
+      <div class="card-body">Rp ${format(revenue)}</div>
+      <div class="card-footer">${data.length} visits</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SMD FRONTLINER</div>
+      <div class="card-body">${fl}</div>
+      <div class="card-footer">Active FL</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CONVERSION RATE</div>
+      <div class="card-body">${conversion}%</div>
+      <div class="card-footer">${covered} / ${registered}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">OUTLET COVERED</div>
+      <div class="card-body">${covered}</div>
+      <div class="card-footer">of ${registered}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">NEW OUTLET</div>
+      <div class="card-body">${newOutletToday}</div>
+      <div class="card-footer">today acquisition</div>
+    </div>
+  `;
+
+  renderChart(data);
+  renderConvChart(data, pd);
+  renderBubbleChart(data, pd);
+renderSoldVisited(data, pd);
+}	
+// ===== chart 1 =====
+function renderChart(data) {
+
+  const map = {};
+  const daysMap = {};
+
+  data.forEach(r => {
+    const name = r["Frontliner"] || "Unknown";
+
+    const date = safeDate(r["Tanggal"]);
+    const dayKey = date ? date.toISOString().split('T')[0] : null;
+
+    let val = r["Value"] || 0;
+    val = Number(val.toString().replace(/[^0-9]/g,''));
+
+    map[name] = (map[name] || 0) + (isNaN(val)?0:val);
+
+    if (dayKey) {
+      if (!daysMap[name]) daysMap[name] = new Set();
+      daysMap[name].add(dayKey);
+    }
+  });
+
+  const avg = Object.keys(map).map(k=>{
+    const days = daysMap[k] ? daysMap[k].size : 1;
+    return [k, map[k]/days];
+  });
+
+  const sorted = avg.sort((a,b)=>b[1]-a[1]).slice(0,20);
+
+  const labels = sorted.map((x,i)=>`#${i+1} ${x[0]}`);
+  const values = sorted.map(x=>x[1]);
+
+  const colors = values.map((v,i)=>{
+    if (i===0) return '#00FFCC';
+    if (v<1000000) return '#fa5252';
+    if (v<1300000) return '#fab005';
+    return '#40c057';
+  });
+
+  if (window.chartFL) window.chartFL.destroy();
+
+  window.chartFL = new Chart(document.getElementById("chartTopFL"), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+
+      plugins: {
+        legend: { display: false },
+        title: {
+          display: true,
+          text: 'Top 20 Frontliner (Avg per Day)',
+          font: { size: 14, weight: 'bold' }
+        }
+      },
+
+      responsive: true
+    }
+  });
+}
+
+// ===== CHART 2 =====
+// ===== CHART 2 (CONVERSION RATE - FIXED PER FRONTLINER) =====
+function renderConvChart(data, pd){
+
+  // ===============================
+  // 1. BUILD OUTLET MASTER PER FL (FROM PD)
+  // ===============================
+  const outletMasterByFL = {};
+
+  pd.forEach(r => {
+    const fl = r["Frontliner"] || "Unknown";
+    const outlet = r["Outlet ID"];
+
+    if (!fl || !outlet) return;
+
+    if (!outletMasterByFL[fl]) {
+      outletMasterByFL[fl] = new Set();
+    }
+
+    outletMasterByFL[fl].add(outlet);
+  });
+
+
+  // ===============================
+  // 2. BUILD VISITED OUTLET PER FL (FROM DATA)
+  // ===============================
+  const outletVisit = {};
+
+  data.forEach(r => {
+    const fl = r["Frontliner"] || "Unknown";
+    const outlet = r["Outlet ID"];
+
+    if (!fl || !outlet) return;
+
+    if (!outletVisit[fl]) {
+      outletVisit[fl] = new Set();
+    }
+
+    outletVisit[fl].add(outlet);
+  });
+
+
+  // ===============================
+  // 3. CALCULATE CONVERSION PER FL
+  // ===============================
+  const result = Object.keys(outletVisit).map(fl => {
+
+    const visited = outletVisit[fl]?.size || 0;
+    const master = outletMasterByFL[fl]?.size || 1;
+
+    const conv = (visited / master) * 100;
+
+    return [fl, conv];
+  });
+
+
+  // ===============================
+  // 4. SORT TOP 20
+  // ===============================
+  const sorted = result
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20);
+
+
+  const labels = sorted.map(x => x[0]);
+  const values = sorted.map(x => x[1]);
+
+
+  // ===============================
+  // 5. COLOR LOGIC
+  // ===============================
+  const colors = values.map(v =>
+    v >= 60 ? '#40c057' : '#fab005'
+  );
+
+
+  // ===============================
+  // 6. DESTROY OLD CHART (SAFE)
+  // ===============================
+  if (window.chartConv && typeof window.chartConv.destroy === "function") {
+    window.chartConv.destroy();
+  }
+
+
+  // ===============================
+  // 7. CREATE CHART
+  // ===============================
+  window.chartConv = new Chart(
+    document.getElementById("chartConv"),
+    {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderRadius: 6
+        }]
+      },
+
+      options: {
+        indexAxis: 'y',
+
+        responsive: true,
+
+        plugins: {
+          legend: { display: false },
+
+          title: {
+            display: true,
+            text: 'Top 20 Conversion Rate (%) per Frontliner',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          },
+
+          tooltip: {
+            callbacks: {
+              label: ctx => ctx.raw.toFixed(1) + '%'
+            }
+          }
+        },
+
+        scales: {
+          x: {
+            max: 100,
+            ticks: {
+              callback: v => v + '%'
+            }
+          }
+        }
+      }
+    }
+  );
+}
+// chart buble MASTER
+function renderBubbleChart(data, pd){
+
+  const outletMasterByFL = {};
+  const outletVisit = {};
+
+  // =========================
+  // MASTER (pd.csv)
+  // =========================
+  pd.forEach(r=>{
+    const fl = r["Frontliner"];
+    const o = r["Outlet ID"];
+    if(!fl || !o) return;
+
+    if(!outletMasterByFL[fl]) outletMasterByFL[fl] = new Set();
+    outletMasterByFL[fl].add(o);
+  });
+
+  // =========================
+  // VISIT (data.csv)
+  // =========================
+  data.forEach(r=>{
+    const fl = r["Frontliner"];
+    const o = r["Outlet ID"];
+    if(!fl || !o) return;
+
+    if(!outletVisit[fl]) outletVisit[fl] = new Set();
+    outletVisit[fl].add(o);
+  });
+
+  // =========================
+  // BUILD DATASET
+  // =========================
+  const raw = Object.keys(outletVisit).map(fl => {
+
+    const visited = outletVisit[fl]?.size || 0;
+    const master = outletMasterByFL[fl]?.size || 1;
+
+    const conv = (visited / master) * 100;
+
+    return {
+      x: visited,
+      y: conv,
+      r: Math.max(6, visited / 4),
+      label: fl
+    };
+  });
+
+  // =========================
+  // HITUNG MIDPOINT (KUADRAN)
+  // =========================
+  const avgX = raw.reduce((a,b)=>a+b.x,0) / raw.length;
+  const avgY = raw.reduce((a,b)=>a+b.y,0) / raw.length;
+
+  // =========================
+// WARNA KUADRAN (SMOOTH STYLE)
+// =========================
+const colored = raw.map(d => {
+
+  let base = "#999";
+  let border = "#666";
+
+  // Q1 HIGH-HIGH
+  if (d.x >= avgX && d.y >= avgY) {
+    base = "rgba(64, 192, 87, 0.25)";
+    border = "#2b8a3e";
+  }
+
+  // Q2 LOW VISIT - HIGH CONV
+  else if (d.x < avgX && d.y >= avgY) {
+    base = "rgba(116, 192, 252, 0.25)";
+    border = "#1c7ed6";
+  }
+
+  // Q3 LOW-LOW
+  else if (d.x < avgX && d.y < avgY) {
+    base = "rgba(250, 82, 82, 0.25)";
+    border = "#c92a2a";
+  }
+
+  // Q4 HIGH VISIT - LOW CONV
+  else if (d.x >= avgX && d.y < avgY) {
+    base = "rgba(250, 176, 5, 0.25)";
+    border = "#e67700";
+  }
+
+  return {
+    ...d,
+    backgroundColor: base,
+    borderColor: border,
+    borderWidth: 2
+  };
+});
+
+  // =========================
+  // DESTROY OLD
+  // =========================
+  if(window.bubbleChart) window.bubbleChart.destroy();
+
+  // =========================
+  // DRAW CHART
+  // =========================
+  window.bubbleChart = new Chart(
+    document.getElementById("chartBubble"),
+    {
+      type: 'bubble',
+      data: {
+        datasets: [{
+          label: 'Frontliner Performance',
+          data: colored,
+          backgroundColor: colored.map(d => d.backgroundColor)
+        }]
+      },
+
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Quadrant: Visit vs Conversion Rate'
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const d = ctx.raw;
+                return `${d.label} | Visit:${d.x} | Conv:${d.y.toFixed(1)}%`;
+              }
+            }
+          }
+        },
+
+        scales: {
+          x: {
+            title: { display: true, text: 'Total Visit' },
+            grid: {
+              color: ctx => ctx.tick.value === avgX ? "#000" : "#e0e0e0"
+            }
+          },
+          y: {
+            title: { display: true, text: 'Conversion %' },
+            max: 100,
+            grid: {
+              color: ctx => ctx.tick.value === avgY ? "#000" : "#e0e0e0"
+            }
+          }
+        }
+      }
+    }
+  );
+}
+// chart Sold vs Visited
+
+function renderSoldVisited(data, pd){
+
+  // =========================
+  // SOLD (data.csv)
+  // =========================
+  const sold = {};
+
+  data.forEach(r => {
+    const fl = r["Frontliner"] || "Unknown";
+    const outlet = r["Outlet ID"];
+
+    if (!fl || !outlet) return;
+
+    if (!sold[fl]) sold[fl] = new Set();
+    sold[fl].add(outlet);
+  });
+
+  // =========================
+  // VISITED (pd.csv)
+  // =========================
+  const visited = {};
+
+  pd.forEach(r => {
+    const fl = r["Frontliner"] || "Unknown";
+    const outlet = r["Outlet ID"];
+
+    if (!fl || !outlet) return;
+
+    if (!visited[fl]) visited[fl] = new Set();
+    visited[fl].add(outlet);
+  });
+
+  // =========================
+  // LABELS
+  // =========================
+  const labels = Array.from(new Set([
+    ...Object.keys(sold),
+    ...Object.keys(visited)
+  ]));
+
+  const soldData = labels.map(fl => sold[fl]?.size || 0);
+  const visitedData = labels.map(fl => visited[fl]?.size || 0);
+
+  // =========================
+  // DESTROY OLD CHART
+  // =========================
+  if (window.soldChart && typeof window.soldChart.destroy === "function") {
+    window.soldChart.destroy();
+  }
+
+  // =========================
+  // STACKED BAR CHART
+  // =========================
+  window.soldChart = new Chart(
+    document.getElementById("chartSoldVisited"),
+    {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'SOLD (Data.csv)',
+            data: soldData,
+            backgroundColor: '#40c057'
+          },
+          {
+            label: 'VISITED (Pd.csv)',
+            data: visitedData,
+            backgroundColor: '#fab005'
+          }
+        ]
+      },
+
+      options: {
+        indexAxis: 'y', // tetap horizontal
+
+        responsive: true,
+
+        plugins: {
+          title: {
+            display: true,
+            text: 'STACKED Sold vs Visited per Frontliner'
+          },
+          legend: {
+            display: true
+          }
+        },
+
+        scales: {
+          x: {
+            stacked: true,   // 🔥 IMPORTANT
+            beginAtZero: true
+          },
+          y: {
+            stacked: true    // 🔥 IMPORTANT
+          }
+        }
+      }
+    }
+  );
+}
+</script>
+
+</body>
+
+</html>
