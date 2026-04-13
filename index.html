@@ -7,119 +7,489 @@
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-/* STYE CHART #### */.chart-box {
-  background: white;
-  padding: 15px;
-  border-radius: 12px;
-  margin-top: 20px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+/* =========================
+   TAB NAVIGATION
+========================= */
+.tab-nav{
+  display:flex;
+  gap:10px;
+  margin:10px 0 16px 0;
+  flex-wrap:wrap;
 }
-/* STYE SCORECARD #### */
+
+.tab-btn{
+  padding:8px 12px;
+  border:none;
+  background:white;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:12px;
+  transition:0.2s;
+}
+
+.tab-btn:hover{
+  background:blue;
+  color:white;
+}
+
+.tab-btn.active{
+  background:#1976d2;
+  color:white;
+}
+
+/* TAB CONTENT */
+.tab-content{
+  display:none;
+  animation: fadeIn .25s ease;
+}
+
+.tab-content.active{
+  display:block;
+}
+
+/* ANIMATION */
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(5px);}
+  to{opacity:1; transform:translateY(0);}
+}
+/* =========================
+   GLOBAL RESET
+========================= */
+*{
+  box-sizing: border-box;
+}
+
 body {
-  margin: 0;           /* 🔥 ini kunci utama */
-  font-family: Segoe UI;
-  background:#f4f4f4;
-  padding: 20px;       /* tetap boleh ada */
+  margin: 0;
+  font-family: Segoe UI, sans-serif;
+  background: #f4f6f9;
+  padding: 16px;
+  color: #333;
 }
-#kpi {
-  display: grid;
-  grid-auto-flow: column;        /* 🔥 susun ke samping */
-  grid-auto-columns: max-content;/* 🔥 lebar sesuai isi */
-  justify-content: center;       /* 🔥 center semua */
-  gap: 12px;
-}
-.header {
-  width: calc(100% + 40px);
-  margin-left: -20px;
-  margin-right: -20px;
+
+/* =========================
+   HEADER + ANIMATION
+========================= */
+.header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* ✅ ini benar */
 
   background: linear-gradient(90deg, #1976d2, #42a5f5);
   color: white;
-  padding: 14px 20px;
-  font-size: 18px;
-  font-weight: bold;
-  border-radius: 0 0 10px 10px; /* opsional biar bawah saja rounded */
-  margin: -20px -20px 15px -20px;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-}
-.card {
-  background:white;
-  padding:12px 16px; /* 🔥 kasih napas kiri kanan */
-  border-radius:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
-  text-align:left;
-  min-width: 220px; /* 🔥 biar ga terlalu kecil */
- 
-}
-.card-title {
-  font-size:11px;
-  color:#6c757d;
-  margin-bottom:5px;
+
+  padding: 16px 20px;
+  margin: -16px -16px 16px -16px;
+
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
 }
 
-.card-body {
-  font-size:20px;
-  font-weight:bold;
-  color:#0b7285;
-  margin-bottom:4px;
-  flex-direction:column;
-  align-items:center;
-}
-
-.card-footer {
-  font-size:11px;
-  color:#6c757d;
-}
-
-/* STYE FILTER #### */
-.filter-bar {
+/* FILTER BOX DI HEADER */
+.filter-box{
   display: flex;
-  gap: 8px;              /* 🔥 rapat */
+  gap: 10px;
   align-items: center;
-  margin-bottom: 15px;
 }
 
-.filter-bar select {
-  padding: 6px 10px;     /* 🔥 lebih kecil */
-  border-radius: 6px;
-  border: 1px solid #dee2e6;
-  background: white;
-  font-size: 12px;
-  width: auto;           /* 🔥 tidak kepanjangan */
-  min-width: 90px;       /* 🔥 tetap readable */
+/* tombol kecil style dashboard */
+.dropdown button{
+  padding: 0px 10px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
+
+  font-size: 12px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+
   transition: 0.2s;
 }
 
-/* hover */
-.filter-bar select:hover {
-  border-color: #74c0fc;
+.dropdown button:hover{
+  background: rgba(255,255,255,0.35);
 }
 
-/* focus */
-.filter-bar select:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 2px rgba(25,118,210,0.15);
+/* dropdown content tetap */
+.dropdown-content{
+  display: none;
+  position: absolute;
+  background: white;
+  color: #333;
+  min-width: 180px;
+  max-height: 250px;
+  overflow-y: auto;
+
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  z-index: 999;
 }
+
+.header .title{
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.header .subtitle{
+  font-size: 12px;
+  opacity: .9;
+}
+
+/* =========================
+   KPI CARDS
+========================= */
+#kpi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card {
+  flex: 1;
+  min-width: 160px;
+  background: #fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  text-align: left;
+
+  animation: fadeIn .4s ease;
+}
+
+.card-title {
+  font-size: 10px;
+  color: #6c757d;
+}
+
+.card-body {
+  font-size: 16px;
+  font-weight: bold;
+  color: #0b7285;
+}
+
+.card-footer {
+  font-size: 10px;
+  color: #6c757d;
+}
+
+/* =========================
+   FILTER BAR (WAJIB HORIZONTAL)
+========================= */
+
+
+/* tiap item tidak boleh full width */
+.filter-item{
+  flex: 0 0 auto;
+}
+
+/* tombol biar rapi */
+.dropdown button{
+  white-space: nowrap;
+}
+
+/* mobile fix */
+@media(max-width:768px){
+
+  
+
+  .filter-box{
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+
+  .dropdown button{
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+.filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+
+  background: #f4f6f9;
+  padding: 10px 12px;
+
+  display: flex;
+  flex-direction: row;     /* 🔥 PENTING: kesamping */
+  align-items: center;
+  gap: 10px;
+
+  flex-wrap: nowrap;       /* ❌ jangan turun */
+  overflow-x: auto;
+
+  backdrop-filter: blur(6px);
+
+  animation: slideDown .4s ease;
+}
+
+.filter-bar > * {
+  flex: 0 0 auto;
+}
+
+/* scrollbar kecil */
+.filter-bar::-webkit-scrollbar {
+  height: 5px;
+}
+.filter-bar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+/* =========================
+   DROPDOWN
+========================= */
+.dropdown {
+  position: relative;
+}
+
+.dropdown button{
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+
+  font-size: 12px;
+
+  background: rgba(255,255,255,0.2);
+  color: white;
+
+  transition: 0.2s;
+}
+
+.dropdown button i{
+  width: 14px;
+  height: 14px;
+}
+
+.dropdown button:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: #1976d2;
+  transform: translateY(-1px);
+}
+
+/* dropdown animasi */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background: white;
+  min-width: 180px;
+  max-height: 240px;
+  overflow-y: auto;
+
+  padding: 8px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+
+  z-index: 999;
+
+  animation: fadeIn .2s ease;
+}
+
+.dropdown-content label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+/* =========================
+   CHART BOX
+========================= */
+.chart-box {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+  animation: fadeIn .5s ease;
+}
+
+/* =========================
+   TABLE BOX
+========================= */
+.table-box{
+  font-size: 11px;   /* 🔥 ini ukuran title table */
+  font-weight: 600;
+  margin-top: 16px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  overflow-x: auto;
+
+  animation: fadeIn .5s ease;
+}
+
+/* =========================
+   TABLE STYLE
+========================= */
+#rankingTable{
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 850px;
+}
+
+#rankingTable th{
+  background: #1976d2;
+  color: white;
+  padding: 11px;
+ 
+  cursor: pointer;
+  position: sticky;
+  top: 0;
+}
+
+#rankingTable td{
+  padding: 6px;
+  
+  text-align: center;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+/* LEFT ALIGN NAME */
+#rankingTable td:nth-child(2),
+#rankingTable th:nth-child(2){
+  text-align: left;
+}
+
+/* hover row */
+#rankingTable tr:hover{
+  background: #FFFFED;
+  transform: scale(1.002);
+  transition: .2s;
+}
+
+/* TOP 1 */
+#rankingTable tbody tr:first-child{
+  background: #e6fffa;
+  font-weight: bold;
+}
+
+/* =========================
+   ANIMATION KEYFRAMES
+========================= */
+@keyframes slideDown{
+  from{
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to{
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn{
+  from{
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+@media (max-width: 768px) {
+
+  body {
+    padding: 10px;
+  }
+
+  .header .title {
+    font-size: 16px;
+  }
+
+  /* KPI jadi stack */
+  #kpi {
+    flex-direction: column;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  /* dropdown full screen style */
+  .dropdown-content {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    top: 80px;
+
+    max-height: 60vh;
+  }
+
+  /* table lebih kecil */
+  #rankingTable {
+    font-size: 9.5px;
+  }
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="header">
-  📊 SMD Team Management Dashboard
+
+  <!-- KIRI -->
+  <div class="header-left">
+    <div class="title">SMD Team Management Dashboard</div>
+    <div class="subtitle">
+      TREC SalesForce — Performance Scorecard · Outlet Penetration
+    </div>
+  </div>
+
+  <!-- KANAN -->
+  <div class="filter-box">
+
+  <div class="dropdown">
+    <button onclick="toggleDropdown('yearBox')">
+      <i data-lucide="calendar"></i>
+      Year
+    </button>
+    <div id="yearBox" class="dropdown-content"></div>
+  </div>
+
+  <div class="dropdown">
+    <button onclick="toggleDropdown('monthBox')">
+      <i data-lucide="calendar-days"></i>
+      Month
+    </button>
+    <div id="monthBox" class="dropdown-content"></div>
+  </div>
+
 </div>
+
+</div>
+
+
 
 <!-- KPI -->
 <div id="kpi"></div>
 <br>
-<!-- FILTER -->
-<div class="filter-bar">
-  <select id="filterYear"></select>
-  <select id="filterMonth"></select>
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="openTab('tab1')">Performance Scorecard</button>
+  <button class="tab-btn" onclick="openTab('tab2')">Outlet Penetration</button>
 </div>
+<div id="tab1" class="tab-content active">
+
 
 <!-- CHART -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px;">
@@ -143,11 +513,110 @@ body {
   </div>
 
 </div>
+<!-- TABLE BAWAH -->
+<div class="table-box">
+  <h3>SMD Performance Ranking Table</h3>
 
+  <table id="rankingTable">
+    <thead>
+      <tr>
+        <th data-key="rank">#</th>
+        <th data-key="fl">Name</th>
+        <th data-key="days">Days</th>
+        <th data-key="vpd">VPD</th>
+        <th data-key="conv">Conv%</th>
+        <th data-key="revenue">Revenue</th>
+        <th data-key="revDay">Rev/Day</th>
+        <th data-key="outlets">Outlets</th>
+        <th data-key="outConv">Out Conv%</th>
+        <th data-key="repeat">Repeat</th>
+        <th data-key="newOut">New Out</th>
+        <th data-key="avgMin">Avg Min</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+ </div>
+<div id="tab2" class="tab-content">
 
+  <div class="chart-box">
+    <h3>Outlet Penetration</h3>
+    <canvas id="chartOutlet"></canvas>
+  </div>
+
+</div>
 <script>
+  lucide.createIcons();
+</script>
+<script>
+function openTab(tabId){
+
+  document.querySelectorAll(".tab-content")
+    .forEach(t => t.classList.remove("active"));
+
+  document.querySelectorAll(".tab-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  document.getElementById(tabId).classList.add("active");
+
+  event.target.classList.add("active");
+}
+function renderOutletPenetration(data, pd){
+
+  const master = {};
+  const visit = {};
+
+  pd.forEach(r=>{
+    const fl = r["Frontliner"];
+    const o = r["Outlet ID"];
+    if(!master[fl]) master[fl] = new Set();
+    master[fl].add(o);
+  });
+
+  data.forEach(r=>{
+    const fl = r["Frontliner"];
+    const o = r["Outlet ID"];
+    if(!visit[fl]) visit[fl] = new Set();
+    visit[fl].add(o);
+  });
+
+  const labels = Object.keys(master);
+
+  const values = labels.map(fl=>{
+    const v = visit[fl]?.size || 0;
+    const m = master[fl]?.size || 1;
+    return (v/m)*100;
+  });
+
+  if(window.outletChart) window.outletChart.destroy();
+
+  window.outletChart = new Chart(
+    document.getElementById("chartOutlet"),
+    {
+      type:'bar',
+      data:{
+        labels,
+        datasets:[{
+          label:'Outlet Penetration %',
+          data:values,
+          backgroundColor:'#1976d2'
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          title:{
+            display:true,
+            text:'Outlet Penetration per Frontliner'
+          }
+        }
+      }
+    }
+  );
+}
 function safeDate(value) {
   const d = new Date(value);
   return d instanceof Date && !isNaN(d.getTime()) ? d : null;
@@ -171,7 +640,11 @@ function format(num) {
 
 let DATA = [];
 let PD = [];
-
+let tableData = [];
+let sortState = {
+  key: "revenue",
+  asc: false
+};
 // ===== AUTO LOAD =====
 window.onload = function() {
   loadCSV();
@@ -217,45 +690,72 @@ function cleanKeys(row) {
   return cleaned;
 }
 
-// ===== FILTER =====
 function initFilter() {
+  const yearBox = document.getElementById("yearBox");
+  const monthBox = document.getElementById("monthBox");
+
   const years = new Set();
-  const months = new Set();
 
   DATA.forEach(r => {
     const d = safeDate(r["Tanggal"]);
-    if (d) {
-      years.add(d.getFullYear());
-      months.add(d.getMonth()+1);
-    }
+    if (d) years.add(d.getFullYear());
   });
 
-  document.getElementById("filterYear").innerHTML =
-    '<option value="">Year</option>' +
-    [...years].map(y=>`<option>${y}</option>`).join("");
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
 
-  document.getElementById("filterMonth").innerHTML =
-    '<option value="">Month</option>' +
-    [...months].map(m=>`<option>${m}</option>`).join("");
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1;
 
-  document.getElementById("filterYear").onchange = render;
-  document.getElementById("filterMonth").onchange = render;
+  // YEAR CHECKBOX
+  yearBox.innerHTML = [...years]
+    .sort()
+    .map(y => `
+      <label>
+        <input type="checkbox" value="${y}" ${y == currentYear ? "checked" : ""}>
+        ${y}
+      </label>
+    `).join("");
+
+  // MONTH CHECKBOX (Jan - Dec)
+  monthBox.innerHTML = monthNames.map((m, i) => `
+    <label>
+      <input type="checkbox" value="${i+1}" ${i+1 === currentMonth ? "checked" : ""}>
+      ${m}
+    </label>
+  `).join("");
+
+  yearBox.onchange = render;
+  monthBox.onchange = render;
+
+  render();
 }
-
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "block" ? "none" : "block";
+}
+function getSelected(id) {
+  return [...document.querySelectorAll(`#${id} input:checked`)]
+    .map(el => el.value);
+}
 // ===== FILTER DATA =====
 function applyFilter(arr) {
-  const y = document.getElementById("filterYear").value;
-  const m = document.getElementById("filterMonth").value;
+  const years = getSelected("yearBox");
+  const months = getSelected("monthBox");
 
   return arr.filter(r => {
     const d = safeDate(r["Tanggal"]);
     if (!d) return false;
 
-    return (!y || d.getFullYear() == y) &&
-           (!m || (d.getMonth()+1) == m);
+    const y = d.getFullYear().toString();
+    const m = (d.getMonth()+1).toString();
+
+    return years.includes(y) && months.includes(m);
   });
 }
-
 // ===== NEW OUTLET =====
 function getNewOutlet(data) {
   const sorted = data
@@ -362,6 +862,7 @@ const todayKey = new Date(maxTime).toISOString().split('T')[0];
   renderConvChart(data, pd);
   renderBubbleChart(data, pd);
 renderSoldVisited(data, pd);
+renderTable(data, pd);
 }	
 // ===== chart 1 =====
 function renderChart(data) {
@@ -569,7 +1070,7 @@ function renderConvChart(data, pd){
   );
 }
 // chart buble MASTER
-function renderBubbleChart(data, pd){
+function renderBubbleChart(data, pd) {
 
   const outletMasterByFL = {};
   const outletVisit = {};
@@ -577,29 +1078,29 @@ function renderBubbleChart(data, pd){
   // =========================
   // MASTER (pd.csv)
   // =========================
-  pd.forEach(r=>{
+  pd.forEach(r => {
     const fl = r["Frontliner"];
     const o = r["Outlet ID"];
-    if(!fl || !o) return;
+    if (!fl || !o) return;
 
-    if(!outletMasterByFL[fl]) outletMasterByFL[fl] = new Set();
+    if (!outletMasterByFL[fl]) outletMasterByFL[fl] = new Set();
     outletMasterByFL[fl].add(o);
   });
 
   // =========================
   // VISIT (data.csv)
   // =========================
-  data.forEach(r=>{
+  data.forEach(r => {
     const fl = r["Frontliner"];
     const o = r["Outlet ID"];
-    if(!fl || !o) return;
+    if (!fl || !o) return;
 
-    if(!outletVisit[fl]) outletVisit[fl] = new Set();
+    if (!outletVisit[fl]) outletVisit[fl] = new Set();
     outletVisit[fl].add(o);
   });
 
   // =========================
-  // BUILD DATASET
+  // BUILD DATA
   // =========================
   const raw = Object.keys(outletVisit).map(fl => {
 
@@ -611,61 +1112,65 @@ function renderBubbleChart(data, pd){
     return {
       x: visited,
       y: conv,
-      r: Math.max(6, visited / 4),
+      r: Math.max(10, Math.min(22, visited * 0.8)), // 🔥 STABLE SIZE
       label: fl
     };
   });
 
   // =========================
-  // HITUNG MIDPOINT (KUADRAN)
+  // SAFE CHECK
   // =========================
+  if (raw.length === 0) return;
+
   const avgX = raw.reduce((a,b)=>a+b.x,0) / raw.length;
   const avgY = raw.reduce((a,b)=>a+b.y,0) / raw.length;
 
   // =========================
-// WARNA KUADRAN (SMOOTH STYLE)
-// =========================
-const colored = raw.map(d => {
+  // COLOR QUADRANT
+  // =========================
+  const colored = raw.map(d => {
 
-  let base = "#999";
-  let border = "#666";
+    let base = "rgba(150,150,150,0.3)";
+    let border = "#666";
 
-  // Q1 HIGH-HIGH
-  if (d.x >= avgX && d.y >= avgY) {
-    base = "rgba(64, 192, 87, 0.25)";
-    border = "#2b8a3e";
-  }
+    // Q1 HIGH-HIGH
+    if (d.x >= avgX && d.y >= avgY) {
+      base = "rgba(64, 192, 87, 0.25)";
+      border = "#2b8a3e";
+    }
 
-  // Q2 LOW VISIT - HIGH CONV
-  else if (d.x < avgX && d.y >= avgY) {
-    base = "rgba(116, 192, 252, 0.25)";
-    border = "#1c7ed6";
-  }
+    // Q2 LOW VISIT - HIGH CONV
+    else if (d.x < avgX && d.y >= avgY) {
+      base = "rgba(116, 192, 252, 0.25)";
+      border = "#1c7ed6";
+    }
 
-  // Q3 LOW-LOW
-  else if (d.x < avgX && d.y < avgY) {
-    base = "rgba(250, 82, 82, 0.25)";
-    border = "#c92a2a";
-  }
+    // Q3 LOW-LOW
+    else if (d.x < avgX && d.y < avgY) {
+      base = "rgba(250, 82, 82, 0.25)";
+      border = "#c92a2a";
+    }
 
-  // Q4 HIGH VISIT - LOW CONV
-  else if (d.x >= avgX && d.y < avgY) {
-    base = "rgba(250, 176, 5, 0.25)";
-    border = "#e67700";
-  }
+    // Q4 HIGH VISIT - LOW CONV
+    else {
+      base = "rgba(250, 176, 5, 0.25)";
+      border = "#e67700";
+    }
 
-  return {
-    ...d,
-    backgroundColor: base,
-    borderColor: border,
-    borderWidth: 2
-  };
-});
+    return {
+      ...d,
+      backgroundColor: base,
+      borderColor: border,
+      borderWidth: 2
+    };
+  });
 
   // =========================
-  // DESTROY OLD
+  // DESTROY OLD CHART
   // =========================
-  if(window.bubbleChart) window.bubbleChart.destroy();
+  if (window.bubbleChart) {
+    window.bubbleChart.destroy();
+  }
 
   // =========================
   // DRAW CHART
@@ -683,16 +1188,20 @@ const colored = raw.map(d => {
       },
 
       options: {
+        responsive: true,
+        maintainAspectRatio: false, // 🔥 FIX SIZE STABLE
+
         plugins: {
           title: {
             display: true,
             text: 'Quadrant: Visit vs Conversion Rate'
           },
+
           tooltip: {
             callbacks: {
               label: ctx => {
                 const d = ctx.raw;
-                return `${d.label} | Visit:${d.x} | Conv:${d.y.toFixed(1)}%`;
+                return `${d.label} | Visit: ${d.x} | Conv: ${d.y.toFixed(1)}%`;
               }
             }
           }
@@ -701,16 +1210,13 @@ const colored = raw.map(d => {
         scales: {
           x: {
             title: { display: true, text: 'Total Visit' },
-            grid: {
-              color: ctx => ctx.tick.value === avgX ? "#000" : "#e0e0e0"
-            }
+            suggestedMin: 0,
+            suggestedMax: 50   // 🔥 BIAR TIDAK AUTO ZOOM KECIL
           },
           y: {
             title: { display: true, text: 'Conversion %' },
-            max: 100,
-            grid: {
-              color: ctx => ctx.tick.value === avgY ? "#000" : "#e0e0e0"
-            }
+            min: 0,
+            max: 100
           }
         }
       }
@@ -820,6 +1326,151 @@ function renderSoldVisited(data, pd){
     }
   );
 }
+// ===============================
+// CLOSE DROPDOWN IF CLICK OUTSIDE
+// ===============================
+document.addEventListener("click", function (e) {
+
+  const dropdowns = document.querySelectorAll(".dropdown");
+
+  dropdowns.forEach(drop => {
+    const content = drop.querySelector(".dropdown-content");
+
+    // kalau klik BUKAN di dalam dropdown
+    if (!drop.contains(e.target)) {
+      if (content) content.style.display = "none";
+    }
+  });
+
+});
+// ===============================
+// TABLE DATA NYA
+// ===============================
+
+function renderTable(data, pd){
+
+  const flMap = {};
+
+  data.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+    const val = Number((r["Value"]||"0").toString().replace(/[^0-9]/g,''))||0;
+    const date = safeDate(r["Tanggal"]);
+    const dayKey = date ? date.toISOString().split("T")[0] : null;
+
+    if(!fl) return;
+
+    if(!flMap[fl]){
+      flMap[fl] = {
+        fl,
+        days: new Set(),
+        outlets: new Set(),
+        revenue: 0
+      };
+    }
+
+    const obj = flMap[fl];
+
+    if(dayKey) obj.days.add(dayKey);
+    if(outlet) obj.outlets.add(outlet);
+    obj.revenue += val;
+  });
+
+  const master = {};
+  pd.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+    if(!fl) return;
+    if(!master[fl]) master[fl] = new Set();
+    if(outlet) master[fl].add(outlet);
+  });
+
+  tableData = Object.values(flMap).map(d=>{
+    const days = d.days.size;
+    const outlets = d.outlets.size;
+
+    const vpd = outlets / (days||1);
+    const revDay = d.revenue / (days||1);
+
+    const conv = master[d.fl]
+      ? (outlets / master[d.fl].size)*100
+      : 0;
+
+    return {
+      fl: d.fl,
+      days,
+      vpd,
+      conv,
+      revenue: d.revenue,
+      revDay,
+      outlets,
+      outConv: conv,
+      repeat: 0,
+      newOut: outlets,
+      avgMin: 0
+    };
+  });
+
+  sortAndRender();
+}
+function sortAndRender(){
+
+  const sorted = [...tableData].sort((a,b)=>{
+    const k = sortState.key;
+
+    let v1 = a[k];
+    let v2 = b[k];
+
+    if(typeof v1 === "string") v1 = v1.toLowerCase();
+    if(typeof v2 === "string") v2 = v2.toLowerCase();
+
+    if(v1 < v2) return sortState.asc ? -1 : 1;
+    if(v1 > v2) return sortState.asc ? 1 : -1;
+    return 0;
+  });
+
+  const tbody = document.querySelector("#rankingTable tbody");
+  tbody.innerHTML = "";
+
+  sorted.forEach((r,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.fl}</td>
+        <td>${r.days}</td>
+        <td>${r.vpd.toFixed(2)}</td>
+        <td>${r.conv.toFixed(1)}%</td>
+        <td>${format(r.revenue)}</td>
+        <td>${format(r.revDay)}</td>
+        <td>${r.outlets}</td>
+        <td>${r.outConv.toFixed(1)}%</td>
+        <td>${r.repeat}</td>
+        <td>${r.newOut}</td>
+        <td>${r.avgMin}</td>
+      </tr>
+    `;
+  });
+}
+document.addEventListener("DOMContentLoaded", () => {
+
+  document.querySelectorAll("#rankingTable th").forEach(th=>{
+    th.addEventListener("click", () => {
+
+      const key = th.dataset.key;
+      if(!key) return;
+
+      if(sortState.key === key){
+        sortState.asc = !sortState.asc;
+      } else {
+        sortState.key = key;
+        sortState.asc = false;
+      }
+
+      sortAndRender();
+    });
+  });
+
+});
 </script>
 
 </body>
