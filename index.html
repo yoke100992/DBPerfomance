@@ -475,6 +475,11 @@ body {
     <div id="monthBox" class="dropdown-content"></div>
   </div>
 
+<div class="dropdown">
+  <button onclick="toggleDropdown('tlBox')">👥 Team</button>
+  <div id="tlBox" class="dropdown-content"></div>
+</div>
+
 </div>
 
 </div>
@@ -617,9 +622,27 @@ function renderOutletPenetration(data, pd){
     }
   );
 }
-function safeDate(value) {
-  const d = new Date(value);
-  return d instanceof Date && !isNaN(d.getTime()) ? d : null;
+function safeDate(val){
+  if (!val) return null;
+
+  // HANDLE format m/dd/yyyy atau mm/dd/yyyy
+  if (val.includes("/")){
+    const parts = val.split("/");
+
+    if (parts.length === 3){
+      let [m, d, y] = parts;
+
+      // pastikan 2 digit
+      m = m.padStart(2, '0');
+      d = d.padStart(2, '0');
+
+      return new Date(`${y}-${m}-${d}`);
+    }
+  }
+
+  // fallback
+  const date = new Date(val);
+  return isNaN(date) ? null : date;
 }
 
 function format3(num) {
@@ -645,37 +668,81 @@ let sortState = {
   key: "revenue",
   asc: false
 };
+
+let nooData = [];
+
+Papa.parse("noo.csv?v=" + new Date().getTime(), {
+  download: true,
+  header: true,
+  complete: function(results) {
+    nooData = results.data;
+  }
+});
 // ===== AUTO LOAD =====
 window.onload = function() {
   loadCSV();
 };
+function initTeamleader(data){
 
+  const box = document.getElementById("tlBox");
+
+  const unique = [...new Set(
+    data
+      .map(r => (r["Teamleader"] || "").trim())
+      .filter(v =>
+        v !== "" &&
+        v !== "#N/A" &&
+        v.toLowerCase() !== "n/a"
+      )
+  )].sort();
+
+  box.innerHTML = unique.map(tl => `
+    <label>
+      <input type="checkbox" value="${tl}" checked>
+      ${tl}
+    </label>
+  `).join("");
+
+  box.querySelectorAll("input").forEach(cb=>{
+    cb.addEventListener("change", render);
+  });
+}
 function loadCSV() {
-  Papa.parse("data.csv", {
+  Papa.parse("data.csv?v=" + new Date().getTime(), {
     download: true,
     header: true,
     skipEmptyLines: true,   // 🔥 penting
     complete: res => {
 
-      DATA = res.data.filter(r =>
-        r &&
-        Object.keys(r).length > 0 &&
-        r["Tanggal"] &&
-        r["Outlet ID"]
-      );
+      DATA = res.data
+  .map(cleanKeys)
+  .map(r => ({
+    ...r,
+    Teamleader: (r["Teamleader"] || "").trim()
+  }))
+  .filter(r =>
+    r &&
+    Object.keys(r).length > 0 &&
+    r["Tanggal"] &&
+    r["Outlet ID"]
+  );
 
-      Papa.parse("pd.csv", {
+      Papa.parse("pd.csv?v=" + new Date().getTime(), {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: res2 => {
 
-          PD = res2.data.filter(r =>
-            r &&
-            r["Outlet ID"]
-          );
+          PD = res2.data
+  .map(cleanKeys)
+  .map(r => ({
+    ...r,
+    Teamleader: (r["Teamleader"] || "").trim()
+  }))
+  .filter(r => r["Outlet ID"]);
 
           initFilter();
+		  initTeamleader(DATA); // 🔥 TAMBAH INI
           render();
         }
       });
@@ -689,6 +756,10 @@ function cleanKeys(row) {
   });
   return cleaned;
 }
+function getSelectedTL(){
+  return [...document.querySelectorAll("#tlBox input:checked")]
+    .map(i => i.value.trim());
+}
 
 function initFilter() {
   const yearBox = document.getElementById("yearBox");
@@ -697,7 +768,11 @@ function initFilter() {
   const years = new Set();
 
   DATA.forEach(r => {
-    const d = safeDate(r["Tanggal"]);
+    const d = safeDate(
+  r["Tanggal"] ||
+  r["Date"] ||
+  r["Tanggal Input"]
+);
     if (d) years.add(d.getFullYear());
   });
 
@@ -733,7 +808,12 @@ function initFilter() {
 
   render();
 }
-function toggleDropdown(id) {
+	function toggleDropdown(id) {
+
+  document.querySelectorAll(".dropdown-content").forEach(d=>{
+    if(d.id !== id) d.style.display = "none";
+  });
+
   const el = document.getElementById(id);
   el.style.display = el.style.display === "block" ? "none" : "block";
 }
@@ -743,53 +823,74 @@ function getSelected(id) {
 }
 // ===== FILTER DATA =====
 function applyFilter(arr) {
+  
   const years = getSelected("yearBox");
   const months = getSelected("monthBox");
+  const tls = getSelectedTL();
 
   return arr.filter(r => {
-    const d = safeDate(r["Tanggal"]);
+    const d = safeDate(
+  r["Tanggal"] ||
+  r["Date"] ||
+  r["Tanggal Input"]
+);
     if (!d) return false;
 
     const y = d.getFullYear().toString();
     const m = (d.getMonth()+1).toString();
-
-    return years.includes(y) && months.includes(m);
+    const tl = (
+  r["Teamleader"] ||
+  r["TL"] ||
+  r["Nama TL"] ||
+  ""
+).trim();
+// 🔥 FILTER DATA KOTOR
+    if (!tl || tl === "#N/A" || tl.toLowerCase() === "n/a") return false;
+    return years.includes(y) &&
+           months.includes(m) &&
+           tls.includes(tl);
   });
 }
 // ===== NEW OUTLET =====
-function getNewOutlet(data) {
-  const sorted = data
-    .filter(r => r["Tanggal"])
-    .sort((a,b) => new Date(a["Tanggal"]) - new Date(b["Tanggal"]));
+function getNewOutlet(){
 
-  const seen = new Set();
-  const newOutletByDay = {};
+  const result = {};
 
-  sorted.forEach(r => {
+  nooData.forEach(r => {
     const date = safeDate(r["Tanggal"]);
     if (!date) return;
 
     const dayKey = date.toISOString().split('T')[0];
     const outlet = r["Outlet ID"];
 
-    if (!newOutletByDay[dayKey]) {
-      newOutletByDay[dayKey] = new Set();
+    if (!result[dayKey]) {
+      result[dayKey] = new Set();
     }
 
-    if (!seen.has(outlet)) {
-      seen.add(outlet);
-      newOutletByDay[dayKey].add(outlet);
-    }
+    result[dayKey].add(outlet);
   });
 
-  return newOutletByDay;
+  return result;
 }
+function filterNOO(nooData, selectedYear, selectedMonth){
+  return nooData.filter(r => {
+    const d = safeDate(r["Tanggal"]);
+    if (!d) return false;
 
+    const yearMatch = !selectedYear || d.getFullYear() == selectedYear;
+    const monthMatch = !selectedMonth || d.getMonth()+1 == selectedMonth;
+
+    return yearMatch && monthMatch;
+  });
+}
 // ===== MAIN RENDER =====
 function render() {
+console.log("DATA TL:", [...new Set(DATA.map(r=>r["Teamleader"]))]);
+console.log("PD TL:", [...new Set(PD.map(r=>r["Teamleader"]))]);
+console.log("NOO TL:", [...new Set(nooData.map(r=>r["Teamleader"]))]);
+console.log("NOO RAW:", nooData.length);
 
-  const newOutletMap = getNewOutlet(DATA);
-
+// console.log("NOO FILTERED:", nooFiltered.length);
  const validDates = DATA
   .map(r => safeDate(r["Tanggal"]))
   .filter(d => d instanceof Date && !isNaN(d));
@@ -803,14 +904,23 @@ if (!isFinite(maxTime)) return;
 
 const todayKey = new Date(maxTime).toISOString().split('T')[0];
 
-  const newOutletToday = newOutletMap[todayKey]
-    ? newOutletMap[todayKey].size
-    : 0;
+	const years = getSelected("yearBox");
+	const months = getSelected("monthBox");
+	const nooFiltered = applyFilter(nooData); // ✅ HARUS DI ATAS
 
+const newOutletToday = new Set(
+  nooFiltered.map(r => r["Outlet ID"])
+).size;
   const data = applyFilter(DATA);
   const pd = applyFilter(PD);
+  
+  
 
-  const fl = new Set(data.map(r=>r["ID Frontliner"])).size;
+ const fl = new Set(
+  data
+    .map(r => (r["Frontliner"] || "").trim().toUpperCase())
+    .filter(v => v !== "")
+).size;
 
   const revenue = data.reduce((t,r)=>{
     let v = r["Value"] || 0;
@@ -858,6 +968,7 @@ const todayKey = new Date(maxTime).toISOString().split('T')[0];
     </div>
   `;
 
+
   renderChart(data);
   renderConvChart(data, pd);
   renderBubbleChart(data, pd);
@@ -871,7 +982,9 @@ function renderChart(data) {
   const daysMap = {};
 
   data.forEach(r => {
-    const name = r["Frontliner"] || "Unknown";
+    const name = (r["Frontliner"] || "Unknown")
+  .trim()
+  .toUpperCase();
 
     const date = safeDate(r["Tanggal"]);
     const dayKey = date ? date.toISOString().split('T')[0] : null;
@@ -1349,6 +1462,31 @@ document.addEventListener("click", function (e) {
 
 function renderTable(data, pd){
 
+const years = getSelected("yearBox");
+const months = getSelected("monthBox");
+
+// 🔥 GROUP NOO PER FL
+const nooMap = {};
+
+const selectedTL = getSelectedTL();
+const nooFiltered = applyFilter(nooData);
+
+nooFiltered.forEach(r => {
+  const fl = r["Frontliner"];
+  const tl = r["Teamleader"]; // 🔥 TAMBAH
+  const outlet = r["Outlet ID"];
+  const d = safeDate(r["Tanggal"]);
+
+  if (!fl || !d) return;
+
+  if (!years.includes(d.getFullYear().toString())) return;
+  if (!months.includes((d.getMonth()+1).toString())) return;
+  if (!selectedTL.includes(tl)) return; // 🔥 TAMBAH INI
+
+  if (!nooMap[fl]) nooMap[fl] = new Set();
+  if (outlet) nooMap[fl].add(outlet);
+});
+
   const flMap = {};
 
   data.forEach(r=>{
@@ -1385,6 +1523,25 @@ function renderTable(data, pd){
     if(outlet) master[fl].add(outlet);
   });
 
+const repeatMap = {};
+
+data.forEach(r => {
+  const fl = r["Frontliner"];
+  const outlet = r["Outlet ID"];
+  const val = Number((r["Value"]||"0").toString().replace(/[^0-9]/g,''))||0;
+  const d = safeDate(r["Tanggal"]);
+
+  if (!fl || !outlet || !d) return;
+  if (val <= 0) return; // 🔥 hanya yang ada penjualan
+
+  const dayKey = d.toISOString().split("T")[0];
+
+  if (!repeatMap[fl]) repeatMap[fl] = {};
+  if (!repeatMap[fl][outlet]) repeatMap[fl][outlet] = new Set();
+
+  repeatMap[fl][outlet].add(dayKey);
+});
+
   tableData = Object.values(flMap).map(d=>{
     const days = d.days.size;
     const outlets = d.outlets.size;
@@ -1405,8 +1562,10 @@ function renderTable(data, pd){
       revDay,
       outlets,
       outConv: conv,
-      repeat: 0,
-      newOut: outlets,
+      repeat: repeatMap[d.fl]
+  ? Object.values(repeatMap[d.fl]).filter(set => set.size > 1).length
+  : 0,
+      newOut: nooMap[d.fl] ? nooMap[d.fl].size : 0,
       avgMin: 0
     };
   });
