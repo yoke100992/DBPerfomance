@@ -3,19 +3,77 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Dashboard Auto CSV</title>
+<title>Dashboard Perfomenace SMD Motoris Interflour Nasional</title>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
+
 <style>
+
+:root{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --card2:#f8fafc;
+  --border:#e2e8f0;
+  --text:#1e293b;
+  --text2:#64748b;
+  --accent:#2563eb;
+  --cyan:#0891b2;
+  --green:#16a34a;
+  --red:#dc2626;
+  --yellow:#ca8a04;
+  --purple:#9333ea;
+  --orange:#ea580c;
+}
+
 /* =========================
-   TAB NAVIGATION
+   GLOBAL
+========================= */
+*{ box-sizing:border-box; }
+
+body{
+  margin:0;
+  font-family:Segoe UI, sans-serif;
+  background:var(--bg);
+  padding:16px;
+  color:var(--text);
+}
+
+/* =========================
+   HEADER
+========================= */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+
+  background:linear-gradient(90deg,#1976d2,#42a5f5);
+  color:white;
+
+  padding:16px 20px;
+  margin:-16px -16px 16px -16px;
+
+  border-radius:0 0 14px 14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+.header .title{ font-size:18px; font-weight:700; }
+.header .subtitle{ font-size:12px; opacity:.9; }
+
+.filter-box{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+/* =========================
+   TAB
 ========================= */
 .tab-nav{
   display:flex;
   gap:10px;
-  margin:10px 0 16px 0;
+  margin:10px 0 16px;
   flex-wrap:wrap;
 }
 
@@ -26,11 +84,11 @@
   border-radius:8px;
   cursor:pointer;
   font-size:12px;
-  transition:0.2s;
+  transition:.2s;
 }
 
 .tab-btn:hover{
-  background:blue;
+  background:var(--accent);
   color:white;
 }
 
@@ -39,206 +97,60 @@
   color:white;
 }
 
-/* TAB CONTENT */
-.tab-content{
-  display:none;
-  animation: fadeIn .25s ease;
-}
-
+.tab-content{ display:none; }
 .tab-content.active{
   display:block;
-}
-
-/* ANIMATION */
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(5px);}
-  to{opacity:1; transform:translateY(0);}
-}
-/* =========================
-   GLOBAL RESET
-========================= */
-*{
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Segoe UI, sans-serif;
-  background: #f4f6f9;
-  padding: 16px;
-  color: #333;
+  animation:fadeIn .25s ease;
 }
 
 /* =========================
-   HEADER + ANIMATION
+   KPI
 ========================= */
-.header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* ✅ ini benar */
-
-  background: linear-gradient(90deg, #1976d2, #42a5f5);
-  color: white;
-
-  padding: 16px 20px;
-  margin: -16px -16px 16px -16px;
-
-  border-radius: 0 0 14px 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+#kpi{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
 }
 
-/* FILTER BOX DI HEADER */
-.filter-box{
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.card{
+  flex:1;
+  min-width:160px;
+
+  background:var(--card);
+  padding:10px 12px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+  animation:fadeIn .4s ease;
 }
 
-/* tombol kecil style dashboard */
-.dropdown button{
-  padding: 0px 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-
-  font-size: 12px;
-  background: rgba(255,255,255,0.2);
-  color: white;
-
-  transition: 0.2s;
-}
-
-.dropdown button:hover{
-  background: rgba(255,255,255,0.35);
-}
-
-/* dropdown content tetap */
-.dropdown-content{
-  display: none;
-  position: absolute;
-  background: white;
-  color: #333;
-  min-width: 180px;
-  max-height: 250px;
-  overflow-y: auto;
-
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-  z-index: 999;
-}
-
-.header .title{
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.header .subtitle{
-  font-size: 12px;
-  opacity: .9;
-}
+.card-title{ font-size:10px; color:var(--text2); }
+.card-body{ font-size:16px; font-weight:bold; color:var(--cyan); }
+.card-footer{ font-size:10px; color:var(--text2); }
 
 /* =========================
-   KPI CARDS
+   FILTER BAR
 ========================= */
-#kpi {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+.filter-bar{
+  position:sticky;
+  top:0;
+  z-index:999;
+
+  display:flex;
+  gap:10px;
+  flex-wrap:nowrap;
+  overflow-x:auto;
+
+  padding:10px 12px;
+  background:var(--bg);
+
+  backdrop-filter:blur(6px);
 }
 
-.card {
-  flex: 1;
-  min-width: 160px;
-  background: #fff;
-  padding: 10px 12px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  text-align: left;
-
-  animation: fadeIn .4s ease;
-}
-
-.card-title {
-  font-size: 10px;
-  color: #6c757d;
-}
-
-.card-body {
-  font-size: 16px;
-  font-weight: bold;
-  color: #0b7285;
-}
-
-.card-footer {
-  font-size: 10px;
-  color: #6c757d;
-}
-
-/* =========================
-   FILTER BAR (WAJIB HORIZONTAL)
-========================= */
-
-
-/* tiap item tidak boleh full width */
-.filter-item{
-  flex: 0 0 auto;
-}
-
-/* tombol biar rapi */
-.dropdown button{
-  white-space: nowrap;
-}
-
-/* mobile fix */
-@media(max-width:768px){
-
-  
-
-  .filter-box{
-    display: flex;
-    flex-direction: row;
-    gap: 6px;
-    justify-content: flex-end;
-  }
-
-  .dropdown button{
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-}
-.filter-bar {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-
-  background: #f4f6f9;
-  padding: 10px 12px;
-
-  display: flex;
-  flex-direction: row;     /* 🔥 PENTING: kesamping */
-  align-items: center;
-  gap: 10px;
-
-  flex-wrap: nowrap;       /* ❌ jangan turun */
-  overflow-x: auto;
-
-  backdrop-filter: blur(6px);
-
-  animation: slideDown .4s ease;
-}
-
-.filter-bar > * {
-  flex: 0 0 auto;
-}
-
-/* scrollbar kecil */
-.filter-bar::-webkit-scrollbar {
-  height: 5px;
-}
-.filter-bar::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
+.filter-bar::-webkit-scrollbar{ height:5px; }
+.filter-bar::-webkit-scrollbar-thumb{
+  background:#ccc;
+  border-radius:10px;
 }
 
 /* =========================
@@ -246,199 +158,396 @@ body {
 ========================= */
 .dropdown {
   position: relative;
+   z-index: 10000;
+}
+
+
+
+
+
+.dropdown-content{
+  display:none;
+  position:absolute;
+  top:110%;
+  left:0;
+
+  min-width:200px;
+  max-height:260px;
+  overflow-y:auto;
+
+  padding:10px;
+  border-radius:12px;
+  color:black;
+
+  background:#fff;
+  box-shadow:0 12px 30px rgba(0,0,0,.2);
+
+  z-index:99999;
+}
+
+.dropdown-content label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+
+  padding:6px 8px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
 }
 
 .dropdown button{
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display:flex;
+  align-items:center;
+  gap:6px;
 
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
+  padding:6px 12px;
+  font-size:13px;
 
-  font-size: 12px;
+  border:1px solid rgba(0,0,0,0.2); /* 🔥 tetap ada outline */
+  border-radius:10px;
+  cursor:pointer;
 
-  background: rgba(255,255,255,0.2);
-  color: white;
-
-  transition: 0.2s;
+  background:White;  /* ✅ transparent */
+  color:#1e293b;           /* 🔥 teks tetap jelas */
 }
 
-.dropdown button i{
-  width: 14px;
-  height: 14px;
-}
-
-.dropdown button:hover {
-  background: rgba(255,255,255,0.2);
-  border-color: #1976d2;
-  transform: translateY(-1px);
-}
-
-/* dropdown animasi */
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background: white;
-  min-width: 180px;
-  max-height: 240px;
-  overflow-y: auto;
-
-  padding: 8px;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-
-  z-index: 999;
-
-  animation: fadeIn .2s ease;
-}
-
-.dropdown-content label {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  font-size: 12px;
-  margin: 4px 0;
+/* HOVER BIAR ADA FEEDBACK */
+.dropdown button:hover{
+  background:rgba(0,0,0,0.05);
 }
 
 /* =========================
-   CHART BOX
+   CHART & TABLE
 ========================= */
-.chart-box {
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  margin-top: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-
-  animation: fadeIn .5s ease;
-}
-
-/* =========================
-   TABLE BOX
-========================= */
+.chart-box,
 .table-box{
-  font-size: 11px;   /* 🔥 ini ukuran title table */
-  font-weight: 600;
-  margin-top: 16px;
-  background: white;
-  padding: 12px;
-  border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  overflow-x: auto;
+  background:white;
+  padding:12px;
+  border-radius:12px;
+  margin-top:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  animation:fadeIn .5s ease;
+}
 
-  animation: fadeIn .5s ease;
+.table-box{
+  font-size:11px;
+  overflow-x:auto;
 }
 
 /* =========================
-   TABLE STYLE
+   TABLE
 ========================= */
 #rankingTable{
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
-  min-width: 850px;
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+  min-width:850px;
 }
 
 #rankingTable th{
-  background: #1976d2;
-  color: white;
-  padding: 11px;
- 
-  cursor: pointer;
-  position: sticky;
-  top: 0;
+  background:#1976d2;
+  color:white;
+  padding:10px;
+  cursor:pointer;
+  position:sticky;
+  top:0;
 }
 
 #rankingTable td{
-  padding: 6px;
-  
-  text-align: center;
-  border-bottom: 1px solid #f1f1f1;
+  padding:6px;
+  text-align:center;
+  border-bottom:1px solid #f1f1f1;
 }
 
-/* LEFT ALIGN NAME */
 #rankingTable td:nth-child(2),
 #rankingTable th:nth-child(2){
-  text-align: left;
+  text-align:left;
 }
 
-/* hover row */
 #rankingTable tr:hover{
-  background: #FFFFED;
-  transform: scale(1.002);
-  transition: .2s;
+  background:#FFFFED;
+  transform:scale(1.002);
+  transition:.2s;
 }
 
-/* TOP 1 */
 #rankingTable tbody tr:first-child{
-  background: #e6fffa;
-  font-weight: bold;
+  background:#e6fffa;
+  font-weight:bold;
 }
 
 /* =========================
-   ANIMATION KEYFRAMES
+   ANIMATION
 ========================= */
-@keyframes slideDown{
-  from{
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to{
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 @keyframes fadeIn{
-  from{
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-  to{
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from{opacity:0; transform:translateY(-5px);}
+  to{opacity:1; transform:translateY(0);}
 }
 
 /* =========================
    MOBILE RESPONSIVE
 ========================= */
-@media (max-width: 768px) {
+@media (max-width:768px){
 
-  body {
-    padding: 10px;
+  body{ padding:10px; }
+
+  .header{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
   }
 
-  .header .title {
-    font-size: 16px;
+  .filter-box{
+    width:100%;
+    justify-content:flex-end;
   }
 
-  /* KPI jadi stack */
-  #kpi {
-    flex-direction: column;
+  /* KPI jadi 2 kolom */
+  #kpi{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
   }
 
-  .card {
-    width: 100%;
+  .card{
+    min-width:unset;
   }
 
-  /* dropdown full screen style */
-  .dropdown-content {
-    position: fixed;
-    left: 10px;
-    right: 10px;
-    top: 80px;
-
-    max-height: 60vh;
+  /* dropdown full */
+  .dropdown-content{
+    position:fixed;
+    left:10px;
+    right:10px;
+    top:80px;
+    max-height:60vh;
   }
 
-  /* table lebih kecil */
-  #rankingTable {
-    font-size: 9.5px;
+  /* chart lebih kecil */
+  .chart-box{
+    height:250px;
   }
+
+  canvas{
+    max-height:250px !important;
+  }
+
+  /* table */
+  #rankingTable{
+    font-size:9.5px;
+  }
+
+}
+.kpi-grid{
+  display:grid;
+  grid-template-columns: repeat(6,1fr);
+  gap:10px;
+}
+
+@media(max-width:768px){
+  .kpi-grid{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+.chart-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:20px;
+  margin-top:20px;
+}
+
+.kpi.active{border-left:5px solid #16a34a;}
+.kpi.cooling{border-left:5px solid #f59e0b;}
+.kpi.stale{border-left:5px solid #dc2626;}
+
+canvas{
+  max-height:300px;
+}
+
+tr.active-row{ background: rgba(22,163,74,0.15); color:#16a34a; }
+tr.cooling-row{ background: rgba(245,158,11,0.15); color:#f59e0b; }
+tr.stale-row{ background: rgba(220,38,38,0.15); color:#dc2626; }
+#outletTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 0px; /* spacing antar row */
+  font-size:12px;
+}
+#outletTable th{
+position:relative;
+  background:linear-gradient(90deg,#1d4ed8,#3b82f6);
+  color:white;
+  padding:10px;
+  text-align:left;
+  font-weight:600;
+  
+}
+canvas{
+  outline: none !important;
+}
+#outletTable td{
+  border-bottom:1px solid #f1f5f9;
+}
+
+/* zebra modern */
+#outletTable tbody tr:nth-child(even){
+  background:#fafafa;
+}
+
+/* hover smooth */
+#outletTable tbody tr:hover{
+  background:#eef2ff;
+}
+
+/* STATUS COLORS */
+tr.active-row{
+  background: rgba(22,163,74,0.12);
+  color:#166534;
+}
+
+tr.cooling-row{
+  background: rgba(245,158,11,0.12);
+  color:#92400e;
+}
+
+tr.stale-row{
+  background: rgba(220,38,38,0.12);
+  color:#7f1d1d;
+}
+
+/* badge style */
+td:nth-child(2){
+  font-weight:600;
+  text-transform:capitalize;
+}
+
+/* card tab 3 */
+.fl-card{
+  background:#fff;
+  border-radius:14px;
+  padding:16px;
+  box-shadow:0 4px 14px rgba(0,0,0,.08);
+  margin-bottom:16px;
+}
+
+.fl-header{
+  font-weight:700;
+  font-size:14px;
+  margin-bottom:4px;
+}
+
+.fl-sub{
+  font-size:11px;
+  color:#64748b;
+  margin-bottom:10px;
+}
+
+.fl-kpi{
+  display:grid;
+  grid-template-columns: repeat(8,1fr);
+  gap:10px;
+}
+
+.fl-box{
+  background:#f8fafc;
+  border-radius:10px;
+  padding:8px;
+  text-align:center;
+}
+
+.fl-box .val{
+  font-weight:700;
+  font-size:14px;
+}
+
+.fl-box .label{
+  font-size:10px;
+  color:#64748b;
+}
+
+@media(max-width:768px){
+  .fl-kpi{
+    grid-template-columns: repeat(2,1fr);
+  }
+}
+
+body{
+  background:var(--bg);
+  font-family:Inter, sans-serif;
+}
+
+/* HEADER */
+.dashboard-header .title{
+  font-size:22px;
+  font-weight:700;
+  color:var(--text);
+}
+
+.dashboard-header .subtitle{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* KPI */
+.kpi-card{
+  background:var(--card);
+  padding:16px;
+  border-radius:14px;
+
+  border-left:4px solid var(--primary);  /* 🔥 tegas */
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+
+  transition:.2s;
+}
+
+.kpi-card:hover{
+  transform:translateY(-2px);
+}
+
+/* beda warna tiap KPI */
+.kpi-card:nth-child(1){ border-left-color:#1e3a8a; }
+.kpi-card:nth-child(2){ border-left-color:#0ea5e9; }
+.kpi-card:nth-child(3){ border-left-color:#16a34a; }
+.kpi-card:nth-child(4){ border-left-color:#f59e0b; }
+
+.kpi-title{
+  font-size:12px;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.kpi-value{
+  font-size:22px;
+  font-weight:700;
+  margin-top:6px;
+  color:var(--text);
+}
+
+/* CHART */
+.chart-box{
+  background:var(--card);
+  padding:14px;
+  border-radius:14px;
+
+  border:1px solid #e2e8f0;
+  box-shadow:0 8px 20px rgba(0,0,0,.05);
+
+  transition:.2s;
+}
+
+.chart-box:hover{
+  box-shadow:0 10px 28px rgba(0,0,0,.08);
+}
+
+/* TITLE */
+.card-title{
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:10px;
+
+  color:var(--text);
+  border-bottom:1px solid #e5e7eb;
+  padding-bottom:6px;
 }
 
 </style>
@@ -449,15 +558,7 @@ body {
 <div class="header">
 
   <!-- KIRI -->
-  <div class="header-left">
-    <div class="title">SMD Team Management Dashboard</div>
-    <div class="subtitle">
-      TREC SalesForce — Performance Scorecard · Outlet Penetration
-    </div>
-  </div>
-
-  <!-- KANAN -->
-  <div class="filter-box">
+   <div class="filter-box">
 
   <div class="dropdown">
     <button onclick="toggleDropdown('yearBox')">
@@ -476,25 +577,42 @@ body {
   </div>
 
 <div class="dropdown">
-  <button onclick="toggleDropdown('tlBox')">👥 Team</button>
+  <button onclick="toggleDropdown('tlBox')">
+  <i data-lucide="users"></i>
+  By Teamleader
+  </button>
   <div id="tlBox" class="dropdown-content"></div>
 </div>
 
 </div>
+  
+ 
+
+  <!-- KANAN -->
+ <div class="header-left">
+    <div class="title">SMD Team Management Dashboard</div>
+    <div class="subtitle">
+      TREC SalesForce — Performance Scorecard · Outlet Penetration
+    </div>
+  </div>
 
 </div>
-
-
 
 <!-- KPI -->
 <div id="kpi"></div>
 <br>
-<div class="tab-nav">
-  <button class="tab-btn active" onclick="openTab('tab1')">Performance Scorecard</button>
-  <button class="tab-btn" onclick="openTab('tab2')">Outlet Penetration</button>
-</div>
-<div id="tab1" class="tab-content active">
 
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="openTab('tab1', this)">Performance Scorecard</button>
+  <button class="tab-btn" onclick="openTab('tab2', this)">Outlet Penetration</button>
+  <button class="tab-btn" onclick="openTab('tab3', this)">Frontliner Deep Dive</button>
+</div>
+
+
+<!------------------------------------------>
+<!--###############TAB 1##################-->
+<!------------------------------------------>
+<div id="tab1" class="tab-content active">
 
 <!-- CHART -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px;">
@@ -542,22 +660,842 @@ body {
     <tbody></tbody>
   </table>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
  </div>
+
+<!------------------------------------------>
+<!--###############TAB 2##################-->
+<!------------------------------------------>
 <div id="tab2" class="tab-content">
 
-  <div class="chart-box">
-    <h3>Outlet Penetration</h3>
-    <canvas id="chartOutlet"></canvas>
+  <!-- KPI -->
+  <div class="kpi-grid">
+
+    <div class="card kpi active">
+      <div class="card-title">Active Buyer</div>
+      <div class="card-body" id="kpiActive">0</div>
+    </div>
+
+    <div class="card kpi cooling">
+      <div class="card-title">Cooling</div>
+      <div class="card-body" id="kpiCooling">0</div>
+    </div>
+
+    <div class="card kpi stale">
+      <div class="card-title">Stale Buyer</div>
+      <div class="card-body" id="kpiStale">0</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Total Outlet</div>
+      <div class="card-body" id="kpiTotalOutlet">0</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Revenue</div>
+      <div class="card-body" id="kpiRevenue">0</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Revenue Risk</div>
+      <div class="card-body" id="kpiRisk">0</div>
+    </div>
+
   </div>
 
+  <!-- CHART -->
+  <div class="chart-grid">
+
+    <div class="card">
+      <div class="card-title">Outlet Status Distribution</div>
+      <canvas id="chartStatus"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Revenue vs Risk</div>
+      <canvas id="chartRevenue"></canvas>
+    </div>
+
+  </div>
+  
+  <div class="card">
+ 
+  <div class="card-title">Outlet List</div>
+  <table id="outletTable">
+    <thead>
+      <tr>
+	  <th>Area</th>
+	  <th>Provinsi</th>
+	  <th>Kota</th>
+	  <th>Kecamatan</th>
+	  <th>Outlet ID</th>
+      <th>Outlet Name</th>
+      <th>Category</th> <!-- ✅ -->
+      <th>Account</th>   <!-- ✅ -->
+      <th>Status</th>
+      <th>Revenue</th>
+      <th>Last Order</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
+
+<div class="card" id="insightBox"></div>
+</div>
+<!------------------------------------------>
+<!--###############TAB 3##################-->
+<!------------------------------------------>
+<div id="tab3" class="tab-content">
+
+  <!-- FILTER -->
+  <div class="card" style="margin-bottom:10px;">
+  <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+
+    <!-- Frontliner -->
+    <select id="flFilter" style="padding:6px 10px;border-radius:8px;">
+      <option value="">All Frontliner</option>
+    </select>
+
+    <!-- Tahun (MULTISELECT DROPDOWN) -->
+    <div class="dropdown">
+      <button onclick="toggleDropdown('tab3YearBox')">
+        Tahun
+      </button>
+      <div id="tab3YearBox" class="dropdown-content"></div>
+    </div>
+
+    <!-- Search -->
+    <input 
+      type="text" 
+      id="flSearch" 
+      placeholder="Search Frontliner..." 
+      style="padding:6px 10px;border-radius:8px;border:1px solid #ccc;"
+    />
+
+  </div>
+</div>
+  
+
+  <!-- CARD CONTAINER -->
+  <div id="flCardContainer"></div>
+  <div id="flDetailContainer"></div>
+
+</div>
+
+
 <script>
-  lucide.createIcons();
-</script>
-<script>
-function openTab(tabId){
+
+// TAB 3 FUNCTION - CARD GRID //
+
+function initYearFilter(DATA){
+
+  const el = document.getElementById("yearFilter");
+  if(!el) return;
+
+  const years = new Set();
+
+  DATA.forEach(r=>{
+    const d = safeDate(r["Tanggal"]);
+    if(d){
+      years.add(d.getFullYear());
+    }
+  });
+
+  const sorted = Array.from(years).sort((a,b)=>b-a);
+
+  el.innerHTML = sorted.map(y=>`
+    <option value="${y}" ${y === YEAR_FILTER ? "selected" : ""}>
+      ${y}
+    </option>
+  `).join("");
+
+  el.onchange = (e)=>{
+    YEAR_FILTER = Number(e.target.value);
+
+    // 🔥 REFRESH SEMUA
+    renderFLCard();
+
+    if(FL_SELECTED){
+      showFLDetail(FL_SELECTED);
+    }
+  };
+}
+
+function updateYearInfo(){
+  const years = getSelected("yearBox");
+
+  const el = document.getElementById("yearInfo");
+  if(!el) return;
+
+  el.innerHTML = years.length
+    ? `Tahun: ${years.join(", ")}`
+    : "Tahun: All";
+}
+function renderFLCard(){
+  	updateYearInfo();
+  const container = document.getElementById("flCardContainer");
+  if(!container) return;
+  
+  if(!FL_SELECTED){
+  container.innerHTML = `
+    <div class="card" style="text-align:center;">
+      Silakan pilih Frontliner terlebih dahulu
+    </div>
+  `;
+  return;
+} 
+
+  const data = tab3Filter(DATA);
+const pd = tab3Filter(PD);
+const noo = tab3Filter(nooData);
+
+  // =========================
+  // FILTER FRONTLINER
+  // =========================
+  let filtered = data;
+
+  if(FL_SELECTED){
+  filtered = filtered.filter(r =>
+    (r["Frontliner"] || "").trim() === FL_SELECTED
+  );
+}
+
+  if(FL_SEARCH){
+    filtered = filtered.filter(r =>
+      (r["Frontliner"] || "").toLowerCase().includes(FL_SEARCH)
+    );
+  }
+
+  // =========================
+  // MASTER OUTLET (pd)
+  // =========================
+  const master = {};
+  pd.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+    if(!fl || !outlet) return;
+
+    if(!master[fl]) master[fl] = new Set();
+    master[fl].add(outlet);
+  });
+
+  // =========================
+  // REPEAT MAP
+  // =========================
+  const repeatMap = {};
+
+  filtered.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+    const d = safeDate(r["Tanggal"]);
+
+    if(!fl || !outlet || !d) return;
+
+    const dayKey = d.toISOString().split("T")[0];
+
+    if(!repeatMap[fl]) repeatMap[fl] = {};
+    if(!repeatMap[fl][outlet]) repeatMap[fl][outlet] = new Set();
+
+    repeatMap[fl][outlet].add(dayKey);
+  });
+
+  // =========================
+  // NEW OUTLET MAP
+  // =========================
+  const nooMap = {};
+
+  noo.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+
+    if(!fl || !outlet) return;
+
+    if(!nooMap[fl]) nooMap[fl] = new Set();
+    nooMap[fl].add(outlet);
+  });
+
+  // =========================
+  // GROUP DATA
+  // =========================
+  const map = {};
+
+  filtered.forEach(r=>{
+    const fl = r["Frontliner"];
+    const outlet = r["Outlet ID"];
+    const val = Number((r["Value"]||"0").toString().replace(/[^0-9]/g,''))||0;
+    const date = safeDate(r["Tanggal"]);
+    const dayKey = date ? date.toISOString().split("T")[0] : null;
+
+    if(!fl) return;
+
+    if(!map[fl]){
+      map[fl] = {
+        visits: 0,
+        revenue: 0,
+        outlets: new Set(),
+        days: new Set()
+      };
+    }
+
+    const obj = map[fl];
+
+    obj.visits++;
+    obj.revenue += val;
+
+    if(outlet) obj.outlets.add(outlet);
+    if(dayKey) obj.days.add(dayKey);
+  });
+
+  // =========================
+  // BUILD RESULT
+  // =========================
+  const result = Object.entries(map)
+    .map(([fl, v])=>{
+
+      const days = v.days.size || 1;
+      const outlets = v.outlets.size;
+
+      const vpd = v.visits / days;
+      const revDay = v.revenue / days;
+
+      const conv = master[fl]
+        ? (outlets / master[fl].size) * 100
+        : 0;
+
+      const repeat = repeatMap[fl]
+        ? Object.values(repeatMap[fl]).filter(set => set.size > 1).length
+        : 0;
+
+      const newOutlet = nooMap[fl]
+        ? nooMap[fl].size
+        : 0;
+
+      return {
+        fl,
+        visits: v.visits,
+        vpd,
+        conv,
+        revenue: v.revenue,
+        revDay,
+        outlets,
+        repeat,
+        newOutlet
+      };
+    })
+    .sort((a,b)=>b.revenue - a.revenue)
+    .slice(0,20);
+
+  // =========================
+  // DATE RANGE
+  // =========================
+  const dates = filtered
+    .map(r => safeDate(r["Tanggal"]))
+    .filter(d => d);
+
+  const minDate = dates.length ? new Date(Math.min(...dates)) : null;
+  const maxDate = dates.length ? new Date(Math.max(...dates)) : null;
+
+  const dateText = minDate && maxDate
+    ? `${minDate.toLocaleDateString()} - ${maxDate.toLocaleDateString()}`
+    : "-";
+
+  // =========================
+  // RENDER
+  // =========================
+  container.innerHTML = result.map(r=>`
+
+    <div class="fl-card">
+
+      <div class="fl-header">${r.fl}</div>
+
+      <div class="fl-sub">
+        Active: ${dateText}
+      </div>
+
+      <div class="fl-kpi">
+
+        <div class="fl-box">
+          <div class="val">${r.visits}</div>
+          <div class="label">Total Visits</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val">${r.vpd.toFixed(1)}</div>
+          <div class="label">Visits/Day</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val">${r.conv.toFixed(1)}%</div>
+          <div class="label">Conversion</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val">Rp ${format(r.revenue)}</div>
+          <div class="label">Total Revenue</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val">Rp ${format(r.revDay)}</div>
+          <div class="label">Rev/Day</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val">${r.outlets}</div>
+          <div class="label">Outlets Covered</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val" style="color:#ea580c;">${r.newOutlet}</div>
+          <div class="label">New Outlet</div>
+        </div>
+
+        <div class="fl-box">
+          <div class="val" style="color:#9333ea;">${r.repeat}</div>
+          <div class="label">Repeat Buyer</div>
+        </div>
+
+      </div>
+
+    </div>
+
+  `).join("");
+
+}
+
+function renderFLDetailLayout(fl){
+
+  const el = document.getElementById("flDetailContainer");
+
+  el.innerHTML = `
+    
+       <!-- CHART AREA -->
+    <div class="chart-grid">
+
+      <div class="chart-box large">
+        <div class="card-title">Monthly Revenue & Visits</div>
+        <canvas id="chartMonthly"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <div class="card-title">Day-of-Week</div>
+        <canvas id="chartDOW"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <div class="card-title">New Outlet</div>
+        <canvas id="chartNOO"></canvas>
+      </div>
+
+      <div class="chart-box full">
+        <div class="card-title">Top 10 Outlet</div>
+        <canvas id="chartTopOutlet"></canvas>
+      </div>
+
+    </div>
+  `;
+}
+
+function showFLDetail(fl){
+
+  renderFLDetailLayout(fl);
+
+  const data = tab3Filter(DATA)
+    .filter(r => (r["Frontliner"] || "").trim() === fl);
+
+  const nooFullYear = tab3Filter(nooData)
+  .filter(r => (r["Frontliner"] || "").trim() === fl);
+
+	renderNOOChart(nooFullYear);	
+  
+  const dataFullYear = tab3Filter(DATA)
+  .filter(r => (r["Frontliner"] || "").trim() === fl);
+
+	renderMonthlyChart(dataFullYear);
+  
+	const pdFiltered = tab3Filter(PD)
+	  .filter(r => (r["Frontliner"] || "").trim() === fl);
+
+	renderDOWChart(data, pdFiltered);
+	
+	renderTopOutletChart(data);
+}
+
+function renderMonthlyChart(data){
+ 
+	const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+	const map = {};
+	const selectedYear = TAB3_FILTER.year[0]; // 🔥 dari dropdown kamu
+  // 🔥 ambil tahun dari filter global (sesuaikan dengan punyamu)
+  
+
+  // ✅ INIT semua bulan (biar tidak bolong)
+  months.forEach((m,i)=>{
+    map[i] = {rev:0, visit:0};
+  });
+
+  data.forEach(r=>{
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+
+    // 🔥 FILTER TAHUN (INI KUNCINYA)
+    if(selectedYear && d.getFullYear().toString() !== selectedYear) return;
+
+    const m = d.getMonth(); // 0-11
+
+    let val = Number((r["Value"]||"0").replace(/[^0-9]/g,''))||0;
+
+    map[m].rev += val;
+    map[m].visit += 1;
+  });
+
+  const revenue = months.map((_,i)=>map[i].rev);
+  const visits = months.map((_,i)=>map[i].visit);
+
+  if(charts.detMonth) charts.detMonth.destroy();
+
+  detMonth = new Chart(document.getElementById("chartMonthly"), {
+  type: 'bar',
+
+  data: {
+    labels: months,
+    datasets: [
+      {
+        label: "Revenue",
+        data: revenue,
+        backgroundColor: "#1d4ed8"
+      },
+      {
+        label: "Visits",
+        data: visits,
+        type: 'line',
+        yAxisID: 'y1',
+        borderColor: "#f59e0b"
+      }
+    ]
+  },
+
+  options: {
+    responsive: true
+  }
+});
+}
+
+function renderDOWChart(data, pd){
+
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat"]; // ❌ Sunday dihapus
+
+  const visitMap = {};
+  const outletSetMap = {};
+
+  days.forEach(d=>{
+    visitMap[d] = 0;
+    outletSetMap[d] = new Set();
+  });
+
+  // 🔥 mapping index JS → nama hari TANPA Sunday
+  const dayMap = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  // VISIT
+  pd.forEach(r=>{
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+
+    const dayName = dayMap[d.getDay()];
+
+    if(dayName === "Sun") return; // 🔥 skip sunday
+
+    visitMap[dayName]++;
+  });
+
+  // SALES (unique outlet)
+  data.forEach(r=>{
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+
+    const dayName = dayMap[d.getDay()];
+
+    if(dayName === "Sun") return; // 🔥 skip sunday
+
+    const outletId = r["Outlet ID"];
+    if(outletId){
+      outletSetMap[dayName].add(outletId);
+    }
+  });
+
+  const visit = days.map(d=>visitMap[d]);
+  const sales = days.map(d=>outletSetMap[d].size);
+
+  if(charts.detDOW) charts.detDOW.destroy();
+
+  charts.detDOW = new Chart(document.getElementById("chartDOW"),{
+    type:'bar',
+    data:{
+      labels:days,
+      datasets:[
+        {
+          label:"Call",
+          data:visit,
+          backgroundColor:"#1d4ed8"
+        },
+        {
+          label:"EC",
+          data:sales,
+          backgroundColor:"#f59e0b"
+        }
+      ]
+    }
+  });
+}
+
+function renderNOOChart(data){
+
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  const map = {};
+
+  const selectedYears = TAB3_FILTER.year; // 🔥 ambil dari global filter
+  // init semua bulan
+  months.forEach((m,i)=>{
+    map[i] = new Set();
+  });
+
+  data.forEach(r=>{
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+    
+	// 🔥 FILTER TAHUN GLOBAL
+    if(selectedYears.length && !selectedYears.includes(d.getFullYear().toString())) return;
+	
+    const m = d.getMonth();
+
+    if(r["Outlet ID"]){
+      map[m].add(r["Outlet ID"]);
+    }
+  });
+
+  const values = months.map((_,i)=>map[i].size);
+
+  if(charts.detNew) charts.detNew.destroy();
+
+  charts.detNew = new Chart(document.getElementById("chartNOO"),{
+    type:'bar',
+    data:{
+      labels:months,
+      datasets: [{
+  label: "New Outlet",
+  data: values	,
+  backgroundColor: "#16a34a", // 🔥 HIJAU SOLID
+  borderRadius: 6
+}]
+    }
+  });
+}
+
+function renderTopOutletChart(data){
+
+  const map = {};
+
+  data.forEach(r=>{
+    const outlet = r["Outlet Name"] || r["Outlet ID"];
+
+    let val = Number((r["Value"]||"0").replace(/[^0-9]/g,''))||0;
+
+    if(!map[outlet]) map[outlet] = 0;
+    map[outlet] += val;
+  });
+
+  const sorted = Object.entries(map)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const labels = sorted.map(x=>x[0]);
+  const values = sorted.map(x=>x[1]);
+
+  if(charts.detTop) charts.detTop.destroy();
+
+ charts.detTop = new Chart(document.getElementById("chartTopOutlet"), {
+  type: 'bar',
+  data: {
+    labels: labels, // pastikan ada labels
+    datasets: [{
+	  label:"Outlet",
+      data: values,
+      backgroundColor: "#1d4ed8", // biru tegas
+      borderColor: "#0f172a",     // garis lebih gelap biar kontras
+      borderWidth: 1,
+      borderRadius: 4
+    }]
+  },
+  options: {
+    indexAxis: 'y'
+  }
+});
+}
+
+function tab3Filter(arr){
+
+  return arr.filter(r => {
+
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return false;
+
+    const y = d.getFullYear().toString();
+
+    if(TAB3_FILTER.year.length && !TAB3_FILTER.year.includes(y)) return false;
+
+    return true;
+  });
+}
+function initTab3Filter(data){
+
+  const years = [...new Set(data.map(r=>{
+    const d = safeDate(r["Tanggal"]);
+    return d ? d.getFullYear() : null;
+  }).filter(v=>v))];
+
+  const tls = [...new Set(data.map(r=>r["Teamleader"]).filter(v=>v))];
+
+  const yearEl = document.getElementById("tab3Year");
+  const monthEl = document.getElementById("tab3Month");
+  const tlEl = document.getElementById("tab3TL");
+
+  yearEl.innerHTML = `<option value="">All Year</option>` +
+    years.map(y=>`<option value="${y}">${y}</option>`).join("");
+
+  monthEl.innerHTML = `<option value="">All Month</option>` +
+    Array.from({length:12}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join("");
+
+  tlEl.innerHTML = `<option value="">All TL</option>` +
+    tls.map(t=>`<option value="${t}">${t}</option>`).join("");
+
+  // EVENT
+  yearEl.onchange = e => {
+    TAB3_FILTER.year = e.target.value ? [e.target.value] : [];
+    renderFLCard();
+  };
+
+  monthEl.onchange = e => {
+    TAB3_FILTER.month = e.target.value ? [e.target.value] : [];
+    renderFLCard();
+  };
+
+  tlEl.onchange = e => {
+    TAB3_FILTER.tl = e.target.value ? [e.target.value] : [];
+    renderFLCard();
+  };
+}
+// END DARI TAB 3 
+let SORT_INIT = false;
+
+function baseFilter(arr){
+  const years = getSelected("yearBox");
+  const months = getSelected("monthBox");
+  const tls = getSelectedTL();
+
+  return arr.filter(r => {
+    const d = safeDate(r["Tanggal"] || r["Date"] || r["Tanggal Input"]);
+    if(!d) return false;
+
+    const y = d.getFullYear().toString();
+    const m = (d.getMonth()+1).toString();
+    const tl = (r["Teamleader"] || "").trim();
+
+    if(!tls.includes(tl)) return false;
+    if(!years.includes(y)) return false;
+    if(!months.includes(m)) return false;
+
+    return true;
+  });
+}
+
+function baseFilterNoMonth(arr){
+
+  const years = getSelected("yearBox");
+  const tls = getSelectedTL();
+
+  return arr.filter(r => {
+    const d = safeDate(r["Tanggal"] || r["Date"] || r["Tanggal Input"]);
+    if(!d) return false;
+
+    const y = d.getFullYear().toString();
+    const tl = (r["Teamleader"] || "").trim();
+
+    if(!tls.includes(tl)) return false;
+    if(!years.includes(y)) return false;
+
+    return true;
+  });
+}
+
+function filterRevenueData(data){
+  return baseFilter(data); // ❌ TIDAK pakai isValidAccount
+}
+function filterOutletData(data){
+  return baseFilter(data)
+    .filter(r => isValidAccount(r["Account"]));
+}
+function initTableSort(){
+if(SORT_INIT) return; // 🔥 cegah dobel
+  SORT_INIT = true;
+ const keys = ["area","province","city","district","outlet","name","category","account","status","revenue","date"];
+
+  document.querySelectorAll("#outletTable th").forEach((th, i) => {
+
+    th.style.cursor = "pointer";
+
+    th.addEventListener("click", () => {
+      console.log("SORT CLICK:", keys[i]); // debug
+      sortTable(keys[i]);
+    });
+
+  });
+
+}
+function sortTable(key){
+
+  console.log("BEFORE:", SORT_KEY, SORT_ASC);
+
+  if(SORT_KEY === key){
+    SORT_ASC = !SORT_ASC; // 🔥 toggle
+  } else {
+    SORT_KEY = key;
+    SORT_ASC = true; // reset ke ASC saat ganti kolom
+  }
+
+  console.log("AFTER:", SORT_KEY, SORT_ASC);
+
+  applyStatusFilter();
+}
+function generateInsight(active, cooling, stale){
+
+  let text = "";
+
+  if(stale > active){
+    text = "⚠️ Banyak outlet sudah STALE → fokus reaktivasi segera";
+  } 
+  else if(cooling > active){
+    text = "⚠️ Banyak outlet mulai cooling → perlu push repeat order";
+  }
+  else{
+    text = "✅ Kondisi sehat, mayoritas outlet aktif";
+  }
+
+  document.getElementById("insightBox").innerHTML = `
+    <b>Insight:</b> ${text}
+  `;
+}
+function formatM(num){
+  num = Number(num) || 0;
+
+  if (num >= 1e9) return (num/1e9).toFixed(2) + " M";
+  if (num >= 1e6) return (num/1e6).toFixed(2) + " Jt";
+  if (num >= 1e3) return (num/1e3).toFixed(2) + " Rb";
+  return num.toString();
+}
+
+function openTab(tabId, el){
 
   document.querySelectorAll(".tab-content")
     .forEach(t => t.classList.remove("active"));
@@ -566,62 +1504,27 @@ function openTab(tabId){
     .forEach(b => b.classList.remove("active"));
 
   document.getElementById(tabId).classList.add("active");
+  el.classList.add("active");
 
-  event.target.classList.add("active");
+  // 🔥 TAMBAHAN
+  if(tabId === "tab3"){
+  const container = document.getElementById("flCardContainer");
+  const detail = document.getElementById("flDetailContainer");
+
+  if(container){
+    container.innerHTML = `
+      <div class="card" style="text-align:center;color:#64748b;">
+        👆 Pilih Frontliner terlebih dahulu
+      </div>
+    `;
+  }
+
+  if(detail){
+    detail.innerHTML = "";
+  }
 }
-function renderOutletPenetration(data, pd){
-
-  const master = {};
-  const visit = {};
-
-  pd.forEach(r=>{
-    const fl = r["Frontliner"];
-    const o = r["Outlet ID"];
-    if(!master[fl]) master[fl] = new Set();
-    master[fl].add(o);
-  });
-
-  data.forEach(r=>{
-    const fl = r["Frontliner"];
-    const o = r["Outlet ID"];
-    if(!visit[fl]) visit[fl] = new Set();
-    visit[fl].add(o);
-  });
-
-  const labels = Object.keys(master);
-
-  const values = labels.map(fl=>{
-    const v = visit[fl]?.size || 0;
-    const m = master[fl]?.size || 1;
-    return (v/m)*100;
-  });
-
-  if(window.outletChart) window.outletChart.destroy();
-
-  window.outletChart = new Chart(
-    document.getElementById("chartOutlet"),
-    {
-      type:'bar',
-      data:{
-        labels,
-        datasets:[{
-          label:'Outlet Penetration %',
-          data:values,
-          backgroundColor:'#1976d2'
-        }]
-      },
-      options:{
-        responsive:true,
-        plugins:{
-          title:{
-            display:true,
-            text:'Outlet Penetration per Frontliner'
-          }
-        }
-      }
-    }
-  );
 }
+
 function safeDate(val){
   if (!val) return null;
 
@@ -664,12 +1567,33 @@ function format(num) {
 let DATA = [];
 let PD = [];
 let tableData = [];
+let SORT_KEY = "revenue";
+let SORT_ASC = false;
 let sortState = {
   key: "revenue",
   asc: false
 };
 
+let GLOBAL_DATA = [];
+let CURRENT_FILTER = "ALL";
 let nooData = [];
+let charts = {
+  detMonth: null,
+  detDOW: null,
+  detNew: null,
+  detTop: null
+};
+
+let chartStatus, chartRevenue;
+let FL_SEARCH = "";
+let FL_SELECTED = "";
+let status = "";
+let color = "";
+
+let YEAR_FILTER = new Date().getFullYear();
+let TAB3_FILTER = {
+  year: [],
+};
 
 Papa.parse("noo.csv?v=" + new Date().getTime(), {
   download: true,
@@ -679,9 +1603,70 @@ Papa.parse("noo.csv?v=" + new Date().getTime(), {
   }
 });
 // ===== AUTO LOAD =====
-window.onload = function() {
+window.onload = function () {
   loadCSV();
+
+  if(isMobile()){
+    document.body.classList.add("mobile");
+  }
+
+  lucide.createIcons();
 };
+window.addEventListener("resize", () => {
+  if(window.innerWidth <= 768){
+    document.body.classList.add("mobile");
+  } else {
+    document.body.classList.remove("mobile");
+  }
+});
+function updateTab3YearLabel(val){
+
+  const btn = document.querySelector(
+    '[onclick="toggleDropdown(\'tab3YearBox\')"]'
+  );
+
+  btn.innerText = (val && val !== "ALL")
+    ? `Tahun: ${val}`
+    : "Tahun";
+}
+function initTab3YearFilter(data){
+
+  const box = document.getElementById("tab3YearBox");
+
+  const years = [...new Set(data.map(r=>{
+    const d = safeDate(r["Tanggal"]);
+    return d ? d.getFullYear() : null;
+  }).filter(v=>v))].sort((a,b)=>b-a);
+
+  box.innerHTML = `
+    <label>
+      <input type="radio" name="tab3Year" value="ALL" checked>
+      All
+    </label>
+  ` + years.map(y => `
+    <label>
+      <input type="radio" name="tab3Year" value="${y}">
+      ${y}
+    </label>
+  `).join("");
+
+  box.querySelectorAll("input").forEach(radio=>{
+    radio.addEventListener("change", ()=>{
+      
+      const val = radio.value;
+
+      TAB3_FILTER.year = val === "ALL" ? [] : [val];
+
+      updateTab3YearLabel(val); // update text tombol
+
+      renderFLCard();
+
+      if(FL_SELECTED){
+        showFLDetail(FL_SELECTED);
+      }
+    });
+  });
+}
 function initTeamleader(data){
 
   const box = document.getElementById("tlBox");
@@ -707,6 +1692,43 @@ function initTeamleader(data){
     cb.addEventListener("change", render);
   });
 }
+
+function initFrontlinerFilter(data){
+console.log("initFrontlinerFilter jalan");
+console.log("select:", document.getElementById("flFilter"));
+  initYearFilter(data);
+  const select = document.getElementById("flFilter");
+  const search = document.getElementById("flSearch");
+
+  if(!select || !search) return;
+
+  const flList = [...new Set(
+    data.map(r => (r["Frontliner"] || "").trim())
+  )].filter(v => v);
+
+ select.innerHTML =
+  '<option value="">-- Pilih Frontliner --</option>' +
+  flList.map(function(fl){
+    return '<option value="'+fl+'">'+fl+'</option>';
+  }).join('');
+  
+  select.onchange = (e) => {
+  FL_SELECTED = e.target.value;
+
+  renderFLCard();
+
+  if(FL_SELECTED){
+    showFLDetail(FL_SELECTED); // 🔥 AUTO SHOW CHART
+  } else {
+    document.getElementById("flDetailContainer").innerHTML = "";
+  }
+};
+
+  search.oninput = (e) => {
+    FL_SEARCH = e.target.value.toLowerCase();
+    renderFLCard(); // 🔥 tambah
+  };
+}
 function loadCSV() {
   Papa.parse("data.csv?v=" + new Date().getTime(), {
     download: true,
@@ -727,7 +1749,7 @@ function loadCSV() {
     r["Outlet ID"]
   );
 
-      Papa.parse("pd.csv?v=" + new Date().getTime(), {
+ Papa.parse("pd.csv?v=" + new Date().getTime(), {
         download: true,
         header: true,
         skipEmptyLines: true,
@@ -742,13 +1764,17 @@ function loadCSV() {
   .filter(r => r["Outlet ID"]);
 
           initFilter();
-		  initTeamleader(DATA); // 🔥 TAMBAH INI
-          render();
+		  initTeamleader(DATA); 
+		  initFrontlinerFilter(DATA); // 🔥 INI YANG HILANG// 🔥 TAMBAH INI
+          initTab3YearFilter(DATA); // ✅ WAJIB
+		  render();
         }
       });
     }
   });
 }
+
+
 function cleanKeys(row) {
   const cleaned = {};
   Object.keys(row).forEach(k => {
@@ -808,7 +1834,7 @@ function initFilter() {
 
   render();
 }
-	function toggleDropdown(id) {
+function toggleDropdown(id) {
 
   document.querySelectorAll(".dropdown-content").forEach(d=>{
     if(d.id !== id) d.style.display = "none";
@@ -822,7 +1848,8 @@ function getSelected(id) {
     .map(el => el.value);
 }
 // ===== FILTER DATA =====
-function applyFilter(arr) {
+function filterData(arr) {
+
   
   const years = getSelected("yearBox");
   const months = getSelected("monthBox");
@@ -830,22 +1857,20 @@ function applyFilter(arr) {
 
   return arr.filter(r => {
     const d = safeDate(
-  r["Tanggal"] ||
-  r["Date"] ||
-  r["Tanggal Input"]
-);
+      r["Tanggal"] ||
+      r["Date"] ||
+      r["Tanggal Input"]
+    );
     if (!d) return false;
 
     const y = d.getFullYear().toString();
     const m = (d.getMonth()+1).toString();
-    const tl = (
-  r["Teamleader"] ||
-  r["TL"] ||
-  r["Nama TL"] ||
-  ""
-).trim();
-// 🔥 FILTER DATA KOTOR
+    const tl = (r["Teamleader"] || "").trim();
+	const acc = (r["Account"] || "").trim();
+	if(!isValidAccount(acc)) return false;
+
     if (!tl || tl === "#N/A" || tl.toLowerCase() === "n/a") return false;
+
     return years.includes(y) &&
            months.includes(m) &&
            tls.includes(tl);
@@ -862,7 +1887,14 @@ function getNewOutlet(){
 
     const dayKey = date.toISOString().split('T')[0];
     const outlet = r["Outlet ID"];
-
+	const district =
+  r["District"] ||
+  r["district"] ||
+  r["Distric"] ||
+  "-";
+  const city = r["City"];
+  const province = r["Province"];
+  const area = r["Area"];
     if (!result[dayKey]) {
       result[dayKey] = new Set();
     }
@@ -883,64 +1915,126 @@ function filterNOO(nooData, selectedYear, selectedMonth){
     return yearMatch && monthMatch;
   });
 }
+
+function isMobile(){
+  return window.innerWidth <= 768;
+}
+function isValidAccount(account){
+  if(!account) return false;
+
+  const acc = account.trim().toLowerCase();
+
+  
+  if(acc === "customer") return false; // optional tambahan
+  if(acc === "-" || acc === "unknown") return false;
+
+  return true;
+}
+
+function filterValidAccountData(arr){
+  return arr.filter(r => isValidAccount(r["Account"]));
+}
+
 // ===== MAIN RENDER =====
+
 function render() {
-console.log("DATA TL:", [...new Set(DATA.map(r=>r["Teamleader"]))]);
-console.log("PD TL:", [...new Set(PD.map(r=>r["Teamleader"]))]);
-console.log("NOO TL:", [...new Set(nooData.map(r=>r["Teamleader"]))]);
-console.log("NOO RAW:", nooData.length);
 
-// console.log("NOO FILTERED:", nooFiltered.length);
- const validDates = DATA
-  .map(r => safeDate(r["Tanggal"]))
-  .filter(d => d instanceof Date && !isNaN(d));
+  console.log("DATA TL:", [...new Set(DATA.map(r=>r["Teamleader"]))]);
+  console.log("PD TL:", [...new Set(PD.map(r=>r["Teamleader"]))]);
+  console.log("NOO TL:", [...new Set(nooData.map(r=>r["Teamleader"]))]);
+  console.log("NOO RAW:", nooData.length);
 
-if (validDates.length === 0) return;
+  // =========================
+  // VALID DATE CHECK
+  // =========================
+  const validDates = DATA
+    .map(r => safeDate(r["Tanggal"]))
+    .filter(d => d instanceof Date && !isNaN(d));
 
-// ambil tanggal max yang valid
-const maxTime = Math.max(...validDates.map(d => d.getTime()));
+  if (validDates.length === 0) return;
 
-if (!isFinite(maxTime)) return;
+  const maxTime = Math.max(...validDates.map(d => d.getTime()));
+  if (!isFinite(maxTime)) return;
 
-const todayKey = new Date(maxTime).toISOString().split('T')[0];
+  const todayKey = new Date(maxTime).toISOString().split('T')[0];
 
-	const years = getSelected("yearBox");
-	const months = getSelected("monthBox");
-	const nooFiltered = applyFilter(nooData); // ✅ HARUS DI ATAS
+  // =========================
+  // FILTER DATA
+  // =========================
+  const filteredNOO = filterData(nooData);
+  const newOutletToday = new Set(filteredNOO.map(r => r["Outlet ID"])).size;
 
-const newOutletToday = new Set(
-  nooFiltered.map(r => r["Outlet ID"])
-).size;
-  const data = applyFilter(DATA);
-  const pd = applyFilter(PD);
-  
-  
+  const dataFilteredRaw = filterData(DATA);
+  const pdFilteredRaw   = filterData(PD);
+ 
+ // 🔥 KHUSUS OUTLET PENETRATION
+	const dataOutlet = filterValidAccountData(dataFilteredRaw);
+	const pdOutlet   = filterValidAccountData(pdFilteredRaw);
 
- const fl = new Set(
-  data
-    .map(r => (r["Frontliner"] || "").trim().toUpperCase())
-    .filter(v => v !== "")
-).size;
+  // =========================
+  // FRONTLINER COUNT
+  // =========================
+  const fl = new Set(
+    dataFilteredRaw
+      .map(r => (r["Frontliner"] || "").trim().toUpperCase())
+      .filter(v => v !== "")
+  ).size;
 
-  const revenue = data.reduce((t,r)=>{
+  // =========================
+  // REVENUE
+  // =========================
+  const revenue = dataFilteredRaw.reduce((t, r) => {
     let v = r["Value"] || 0;
     v = Number(v.toString().replace(/[^0-9]/g,''));
-    return t + (isNaN(v)?0:v);
-  },0);
+    return t + (isNaN(v) ? 0 : v);
+  }, 0);
 
-  const outletData = new Set(data.map(r=>r["Outlet ID"]));
-  const outletPD = new Set(pd.map(r=>r["Outlet ID"]));
+  // =========================
+  // OUTLET COVERAGE
+  // =========================
+  const outletData = new Set(
+    dataFilteredRaw
+      .filter(r => isValidAccount(r["Account"]))
+      .map(r => r["Outlet ID"])
+  );
+
+  const outletPD = new Set(
+    pdFilteredRaw.map(r => r["Outlet ID"])
+  );
 
   const covered = outletData.size;
   const registered = outletPD.size;
 
-  const conversion = registered ? ((covered/registered)*100).toFixed(1) : 0;
+  const conversion = registered
+    ? ((covered / registered) * 100).toFixed(1)
+    : 0;
+	
+	repeatMap = {};
 
+// build ulang repeatMap setiap render
+dataFilteredRaw.forEach(r => {
+  const fl = r["Frontliner"];
+  const outlet = r["Outlet ID"];
+  const date = safeDate(r["Tanggal"]);
+
+  if (!fl || !outlet || !date) return;
+
+  const dayKey = date.toISOString().split("T")[0];
+
+  if (!repeatMap[fl]) repeatMap[fl] = {};
+  if (!repeatMap[fl][outlet]) repeatMap[fl][outlet] = new Set();
+
+  repeatMap[fl][outlet].add(dayKey);
+});
+
+  // =========================
+  // KPI RENDER
+  // =========================
   document.getElementById("kpi").innerHTML = `
     <div class="card">
       <div class="card-title">TOTAL REVENUE</div>
       <div class="card-body">Rp ${format(revenue)}</div>
-      <div class="card-footer">${data.length} visits</div>
+      <div class="card-footer">${dataFilteredRaw.length} visits</div>
     </div>
 
     <div class="card">
@@ -968,31 +2062,65 @@ const newOutletToday = new Set(
     </div>
   `;
 
+  // =========================
+  // CHARTS
+  // =========================
+  renderChart(dataFilteredRaw);
+  renderConvChart(dataFilteredRaw, pdFilteredRaw);
+  renderBubbleChart(dataFilteredRaw, pdFilteredRaw);
+  renderSoldVisited(dataFilteredRaw, pdFilteredRaw);
+  renderRankingTable(dataFilteredRaw, pdFilteredRaw);
 
-  renderChart(data);
-  renderConvChart(data, pd);
-  renderBubbleChart(data, pd);
-renderSoldVisited(data, pd);
-renderTable(data, pd);
-}	
+  // =========================
+  // OUTLET SUMMARY
+  // =========================
+  const grouped = groupOutlet(dataOutlet);
+  renderOutletTable(grouped);
+  GLOBAL_DATA = grouped;
+  initTableSort();
+  calculateSummary(grouped);
+  applyStatusFilter();
+ 
+  initFrontlinerFilter(DATA);
+  
+  
+  
+}
+ 
+
+
 // ===== chart 1 =====
+
+
 function renderChart(data) {
+
+  // 🔥 SAFETY GUARD
+  if (!Array.isArray(data)) return;
+
+  // =========================
+  // FILTER FRONTLINER
+  // =========================
+  const filtered = FL_SELECTED && FL_SELECTED !== "ALL"
+    ? data.filter(r =>
+        (r["Frontliner"] || "").trim() === FL_SELECTED
+      )
+    : data;
 
   const map = {};
   const daysMap = {};
 
-  data.forEach(r => {
+  filtered.forEach(r => {
+
     const name = (r["Frontliner"] || "Unknown")
-  .trim()
-  .toUpperCase();
+      .trim()
+      .toUpperCase();
 
     const date = safeDate(r["Tanggal"]);
     const dayKey = date ? date.toISOString().split('T')[0] : null;
 
-    let val = r["Value"] || 0;
-    val = Number(val.toString().replace(/[^0-9]/g,''));
+    let val = Number((r["Value"] || "0").toString().replace(/[^0-9]/g, ""));
 
-    map[name] = (map[name] || 0) + (isNaN(val)?0:val);
+    map[name] = (map[name] || 0) + (isNaN(val) ? 0 : val);
 
     if (dayKey) {
       if (!daysMap[name]) daysMap[name] = new Set();
@@ -1000,50 +2128,55 @@ function renderChart(data) {
     }
   });
 
-  const avg = Object.keys(map).map(k=>{
+  const avg = Object.keys(map).map(k => {
     const days = daysMap[k] ? daysMap[k].size : 1;
-    return [k, map[k]/days];
+    return [k, map[k] / days];
   });
 
-  const sorted = avg.sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const sorted = avg.sort((a, b) => b[1] - a[1]).slice(0, 20);
 
-  const labels = sorted.map((x,i)=>`#${i+1} ${x[0]}`);
-  const values = sorted.map(x=>x[1]);
+  const labels = sorted.map((x, i) => `#${i + 1} ${x[0]}`);
+  const values = sorted.map(x => x[1]);
 
-  const colors = values.map((v,i)=>{
-    if (i===0) return '#00FFCC';
-    if (v<1000000) return '#fa5252';
-    if (v<1300000) return '#fab005';
+  const colors = values.map((v, i) => {
+    if (i === 0) return '#00FFCC';
+    if (v < 1000000) return '#fa5252';
+    if (v < 1300000) return '#fab005';
     return '#40c057';
   });
 
-  if (window.chartFL) window.chartFL.destroy();
+  // =========================
+  // DESTROY SAFELY
+  // =========================
+  if (window.chartFL && typeof window.chartFL.destroy === "function") {
+    window.chartFL.destroy();
+  }
 
-  window.chartFL = new Chart(document.getElementById("chartTopFL"), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderRadius: 6
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-
-      plugins: {
-        legend: { display: false },
-        title: {
-          display: true,
-          text: 'Top 20 Frontliner (Avg per Day)',
-          font: { size: 14, weight: 'bold' }
-        }
+  window.chartFL = new Chart(
+    document.getElementById("chartTopFL"),
+    {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderRadius: 6
+        }]
       },
-
-      responsive: true
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: 'Top 20 Frontliner (Avg per Day)'
+          }
+        }
+      }
     }
-  });
+  );
 }
 
 // ===== CHART 2 =====
@@ -1148,7 +2281,17 @@ function renderConvChart(data, pd){
 
       options: {
         indexAxis: 'y',
+animation: {
+  duration: 900,
+  easing: 'easeOutQuart',
+  delay: (ctx) => ctx.dataIndex * 50
+},
 
+animations: {
+  x: {
+    from: 0
+  }
+},
         responsive: true,
 
         plugins: {
@@ -1301,6 +2444,16 @@ function renderBubbleChart(data, pd) {
       },
 
       options: {
+	  animation: {
+  duration: 1200,
+  easing: 'easeOutElastic'
+},
+
+animations: {
+  radius: {
+    from: 0
+  }
+},
         responsive: true,
         maintainAspectRatio: false, // 🔥 FIX SIZE STABLE
 
@@ -1401,39 +2554,53 @@ function renderSoldVisited(data, pd){
           {
             label: 'SOLD (Data.csv)',
             data: soldData,
-            backgroundColor: '#40c057'
+            backgroundColor: '#40c057',
+            stack: 'stack1'
           },
           {
             label: 'VISITED (Pd.csv)',
             data: visitedData,
-            backgroundColor: '#fab005'
+            backgroundColor: '#fab005',
+            stack: 'stack1'
           }
         ]
       },
 
       options: {
-        indexAxis: 'y', // tetap horizontal
-
         responsive: true,
+        indexAxis: 'y',
 
         plugins: {
           title: {
             display: true,
-            text: 'STACKED Sold vs Visited per Frontliner'
+            text: 'Sold vs Visited Outlet per Frontliner',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
           },
           legend: {
-            display: true
+            position: 'bottom'
           }
         },
 
         scales: {
           x: {
-            stacked: true,   // 🔥 IMPORTANT
-            beginAtZero: true
+            stacked: true,
+            title: {
+              display: true,
+              text: 'Jumlah Outlet'
+            }
           },
           y: {
-            stacked: true    // 🔥 IMPORTANT
+            stacked: true
           }
+        },
+
+        animation: {
+          duration: 1000,
+          easing: 'easeOutQuart',
+          delay: (ctx) => ctx.dataIndex * 80
         }
       }
     }
@@ -1456,12 +2623,260 @@ document.addEventListener("click", function (e) {
   });
 
 });
+
+function groupOutlet(data){
+
+  const map = {};
+
+  data.forEach(row => {
+	
+    const id = row["Outlet ID"];
+    const accountRaw = (row["Account"] || "").toString().trim();
+    const account = accountRaw.toLowerCase();
+	// ❌ HARD BLOCK "KONSUMEN"
+if (account === "konsumen") return;
+    // ❌ filter HARUS setelah account dibuat
+    if(!isValidAccount(account)) return;
+
+    const name = row["Outlet Name"];
+    const category = row["Category"] || "-";
+    const district =
+  row["District"] ||
+  row["district"] ||
+  row["Kecamatan"] ||
+  "-";
+  const city = row["City"];
+  const province = row["Province"];
+  const area = row["Area"];
+    const date = safeDate(row["Tanggal"]);
+    if (!date) return;
+
+    const revenue = Number(
+      (row["Value"] || "0").toString().replace(/[^0-9]/g,'')
+    );
+
+    const key = id + "_" + account;
+
+    // 🔥 INIT OBJECT
+    if(!map[key]){
+      map[key] = {
+		area: area,
+	    province: province,
+		city: city,
+	    district: district,
+        outlet: id,
+        name: name,
+        category: category,
+        account: account,
+        lastOrder: date,
+        revenue: 0
+      };
+    }
+
+    // 🔥 UPDATE LAST ORDER
+    if(date > map[key].lastOrder){
+      map[key].lastOrder = date;
+    }
+
+    // 🔥 ADD REVENUE
+    map[key].revenue += revenue;
+
+  });
+
+  return Object.values(map);
+}
+function filterByDistrict(data, selectedDistrict){
+
+  if(!selectedDistrict || selectedDistrict === "ALL"){
+    return data;
+  }
+
+  return data.filter(d => d.district === selectedDistrict);
+}
+
+
+function calculateSummary(grouped){
+
+  const today = new Date();
+
+  let active = 0;
+  let cooling = 0;
+  let stale = 0;
+  let totalRevenue = 0;
+  let revenueRisk = 0;
+
+  grouped.forEach(o => {
+
+    const diff = (today - o.lastOrder) / (1000 * 60 * 60 * 24);
+
+    totalRevenue += o.revenue;
+
+    if(diff <= 30){
+      active++;
+    } else if(diff <= 60){
+      cooling++;
+      revenueRisk += o.revenue;
+    } else {
+      stale++;
+      revenueRisk += o.revenue;
+    }
+
+  });
+
+  // KPI
+  document.getElementById("kpiTotalOutlet").innerText = grouped.length;
+  animateValue("kpiActive", active);
+animateValue("kpiCooling", cooling);
+animateValue("kpiStale", stale);
+animateValue("kpiTotalOutlet", grouped.length);
+  document.getElementById("kpiCooling").innerText = cooling;
+  document.getElementById("kpiStale").innerText = stale;
+  document.getElementById("kpiRevenue").innerText = format(totalRevenue);
+  document.getElementById("kpiRisk").innerText = formatM(revenueRisk);
+
+  renderCharts(active, cooling, stale, totalRevenue, revenueRisk);
+  generateInsight(active, cooling, stale);
+}
+
+function renderCharts(active, cooling, stale, revenue, risk){
+
+  const el1 = document.getElementById("chartStatus");
+  const el2 = document.getElementById("chartRevenue");
+  if(!el1 || !el2) return;
+
+  if(chartStatus) chartStatus.destroy();
+  if(chartRevenue) chartRevenue.destroy();
+
+  chartStatus = new Chart(el1, {
+    type: 'doughnut',
+    data: {
+      labels: ['Active', 'Cooling', 'Stale'],
+      datasets: [{
+        data: [active, cooling, stale],
+        backgroundColor: ['#16a34a','#f59e0b','#dc2626']
+      }]
+    },
+    options:{
+  plugins:{
+    legend:{position:'bottom'}
+  },
+  onClick: (e, elements) => {
+    if(elements.length > 0){
+      const index = elements[0].index;
+      const label = chartStatus.data.labels[index];
+
+      CURRENT_FILTER = label.toUpperCase();
+    } else {
+      CURRENT_FILTER = "ALL";
+    }
+
+    applyStatusFilter();
+  }
+}
+  });
+
+
+  chartRevenue = new Chart(el2, {
+    type: 'bar',
+    data: {
+      labels: ['Revenue','Risk'],
+      datasets: [{
+        data: [revenue, risk],
+        backgroundColor: ['#2563eb','#dc2626']
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}}
+    }
+  });
+}
+function getStatus(o){
+  const today = new Date();
+  const diff = (today - o.lastOrder) / (1000 * 60 * 60 * 24);
+
+  if(diff <= 30) return "ACTIVE";
+  if(diff <= 60) return "COOLING";
+  return "STALE";
+}
+
+function applyStatusFilter(){
+
+  let filtered = GLOBAL_DATA;
+
+  if(CURRENT_FILTER !== "ALL"){
+    filtered = GLOBAL_DATA.filter(o => getStatus(o) === CURRENT_FILTER);
+  }
+
+  // 🔥 SORTING ENGINE
+  filtered.sort((a,b)=>{
+
+    let valA, valB;
+	if(SORT_KEY === "area"){
+	  valA = (a.area || "").toLowerCase();
+	  valB = (b.area || "").toLowerCase();
+	}
+	if(SORT_KEY === "province"){
+	  valA = (a.province || "").toLowerCase();
+	  valB = (b.province || "").toLowerCase();
+	}
+	if(SORT_KEY === "city"){
+	  valA = (a.city || "").toLowerCase();
+	  valB = (b.city || "").toLowerCase();
+	}
+	if(SORT_KEY === "district"){
+	  valA = (a.district || "").toLowerCase();
+	  valB = (b.district || "").toLowerCase();
+	}
+    if(SORT_KEY === "outlet"){
+      valA = a.outlet;
+      valB = b.outlet;
+    }
+
+    if(SORT_KEY === "name"){
+      valA = a.name || "";
+      valB = b.name || "";
+    }
+	if(SORT_KEY === "category"){
+		valA = (a.category || "").toLowerCase();
+		valB = (b.category || "").toLowerCase();
+	}
+
+	if(SORT_KEY === "account"){
+	  valA = (a.account || "").toLowerCase();
+	  valB = (b.account || "").toLowerCase();
+	}
+
+    if(SORT_KEY === "status"){
+      valA = getStatus(a);
+      valB = getStatus(b);
+    }
+
+    if(SORT_KEY === "revenue"){
+      valA = a.revenue;
+      valB = b.revenue;
+    }
+
+    if(SORT_KEY === "date"){
+      valA = a.lastOrder;
+      valB = b.lastOrder;
+    }
+
+    if(valA < valB) return SORT_ASC ? -1 : 1;
+    if(valA > valB) return SORT_ASC ? 1 : -1;
+    return 0;
+  });
+
+  renderOutletTable(filtered);
+}
 // ===============================
 // TABLE DATA NYA
 // ===============================
-
-function renderTable(data, pd){
-
+function formatRupiah(num){
+  return "Rp " + num.toLocaleString("id-ID");
+}
+function renderRankingTable(data, pd){
+const grouped = groupOutlet(data);
+calculateSummary(grouped);
 const years = getSelected("yearBox");
 const months = getSelected("monthBox");
 
@@ -1469,7 +2884,22 @@ const months = getSelected("monthBox");
 const nooMap = {};
 
 const selectedTL = getSelectedTL();
-const nooFiltered = applyFilter(nooData);
+const nooFiltered = nooData.filter(r => {
+  const d = safeDate(r["Tanggal"]);
+  if (!d) return false;
+
+  const years = getSelected("yearBox");
+  const months = getSelected("monthBox");
+  const tls = getSelectedTL();
+
+  const y = d.getFullYear().toString();
+  const m = (d.getMonth()+1).toString();
+  const tl = (r["Teamleader"] || "").trim();
+
+  return years.includes(y) &&
+         months.includes(m) &&
+         tls.includes(tl);
+});
 
 nooFiltered.forEach(r => {
   const fl = r["Frontliner"];
@@ -1523,7 +2953,7 @@ nooFiltered.forEach(r => {
     if(outlet) master[fl].add(outlet);
   });
 
-const repeatMap = {};
+
 
 data.forEach(r => {
   const fl = r["Frontliner"];
@@ -1571,6 +3001,70 @@ data.forEach(r => {
   });
 
   sortAndRender();
+}
+function renderOutletTable(data){
+
+  const tbody = document.querySelector("#outletTable tbody");
+  if(!tbody) return;
+
+  data = data.filter(o => isValidAccount(o.account));
+  
+  tbody.innerHTML = "";
+let grandTotal = 0; // 🔥 total semua	
+  data
+    .slice(0, 50)
+    .forEach(o => {
+
+      const status = getStatus(o);
+
+      // ✅ BUAT tr dulu
+      const tr = document.createElement("tr");
+
+      // ✅ kasih warna sesuai status
+      if(status === "ACTIVE") tr.classList.add("active-row");
+      if(status === "COOLING") tr.classList.add("cooling-row");
+      if(status === "STALE") tr.classList.add("stale-row");
+
+      // ✅ highlight kalau sedang difilter
+      if(CURRENT_FILTER === status){
+        tr.style.outline = "none";
+      }
+	 grandTotal += o.revenue; // ✅ FIX
+      tr.innerHTML = `
+	    <td>${o.area || "-"}</td>
+		<td>${o.province || "-"}</td>
+	    <td>${o.city || "-"}</td>
+	    <td>${o.district || "-"}</td>
+        <td>${o.outlet}</td>
+		<td>${o.name || "-"}</td> <!-- ✅ -->
+		<td>${o.category || "-"}</td>  <!-- ✅ FIX -->
+		<td>${o.account || "-"}</td>   <!-- ✅ FIX -->
+        <td>${status}</td>
+        <td>${formatM(o.revenue)}</td>
+        <td>${o.lastOrder.toLocaleDateString()}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+}
+function animateValue(id, end){
+  const el = document.getElementById(id);
+  let start = 0;
+  const duration = 500;
+  const step = end / (duration / 16);
+
+  function update(){
+    start += step;
+    if(start >= end){
+      el.innerText = end;
+      return;
+    }
+    el.innerText = Math.floor(start);
+    requestAnimationFrame(update);
+  }
+
+  update();
 }
 function sortAndRender(){
 
@@ -1630,6 +3124,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
+
 </script>
 
 </body>
