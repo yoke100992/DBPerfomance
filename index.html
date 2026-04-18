@@ -114,19 +114,64 @@ body{
 
 .card{
   flex:1;
-  min-width:160px;
+  min-width:140px;
 
-  background:var(--card);
-  padding:10px 12px;
-  border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  background: var(--card);
+  padding: 8px 10px;
+  border-radius: 10px;
 
-  animation:fadeIn .4s ease;
+  border: 1px solid rgba(226,232,240,0.8);
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+
+  transition: all .2s ease;
+  position: relative;
+
+  animation: fadeIn .3s ease;
 }
 
-.card-title{ font-size:10px; color:var(--text2); }
-.card-body{ font-size:16px; font-weight:bold; color:var(--cyan); }
-.card-footer{ font-size:10px; color:var(--text2); }
+/* hover lebih subtle */
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.08);
+}
+
+/* TITLE kecil & clean */
+.card-title{
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+
+  color: var(--text2);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  margin-bottom: 6px;
+}
+
+/* garis lebih tipis */
+.card-title::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background: #e5e7eb;
+}
+
+/* BODY diperkecil */
+.card-body{
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+/* FOOTER lebih kecil */
+.card-footer{
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text2);
+}
 
 /* =========================
    FILTER BAR
@@ -161,28 +206,33 @@ body{
    z-index: 10000;
 }
 
-
-
-
+.dropdown,
+.filter-box{
+  position: relative;
+  z-index: 50; /* lebih tinggi dari table */
+}
 
 .dropdown-content{
-  display:none;
-  position:absolute;
-  top:110%;
-  left:0;
+  display:none; /* 🔥 disembunyikan dulu, muncul saat klik (JS toggle) */
+  
+  position:absolute; /* 📍 posisi mengikuti parent (.dropdown), tidak ikut layout */
+  top:110%; /* ⬇️ muncul sedikit di bawah tombol */
+  left:0; /* ↔️ sejajar kiri dengan button */
 
-  min-width:200px;
-  max-height:260px;
-  overflow-y:auto;
+  min-width:170px; /* 📏 lebar minimal dropdown */
+  max-height:210px; /* 📏 tinggi maksimal dropdown */
 
-  padding:10px;
-  border-radius:12px;
-  color:black;
+  overflow-y:auto; /* 🔄 kalau isi panjang, bisa scroll */
 
-  background:#fff;
-  box-shadow:0 12px 30px rgba(0,0,0,.2);
+  padding:10px; /* 📦 jarak isi dari tepi box */
+  border-radius:12px; /* 🔘 sudut jadi rounded (modern look) */
 
-  z-index:99999;
+  color:black; /* 🎨 warna teks */
+  background:#fff; /* 🎨 background putih */
+
+  box-shadow:0 12px 30px rgba(0,0,0,.2); /* 🌫️ efek bayangan biar floating */
+
+  z-index:999; /* 🧠 supaya tidak ketutup elemen lain */
 }
 
 .dropdown-content label{
@@ -193,7 +243,7 @@ body{
   padding:6px 8px;
   border-radius:8px;
   cursor:pointer;
-  font-size:14px;
+  font-size:12px;
 }
 
 .dropdown button{
@@ -201,11 +251,11 @@ body{
   align-items:center;
   gap:6px;
 
-  padding:6px 12px;
-  font-size:13px;
+  padding:4px 8px; /* 🔥 INI YANG NGATUR BESAR KECIL BUTTON */
+  font-size:11px; /* 🔥 TEKS DI DALAM BUTTON */
 
   border:1px solid rgba(0,0,0,0.2); /* 🔥 tetap ada outline */
-  border-radius:10px;
+  border-radius:10px; /* bentuk kotak */
   cursor:pointer;
 
   background:White;  /* ✅ transparent */
@@ -214,7 +264,8 @@ body{
 
 /* HOVER BIAR ADA FEEDBACK */
 .dropdown button:hover{
-  background:rgba(0,0,0,0.05);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.10);
+  transform: translateY(-2px);
 }
 
 /* =========================
@@ -309,9 +360,7 @@ body{
     gap:8px;
   }
 
-  .card{
-    min-width:unset;
-  }
+
 
   /* dropdown full */
   .dropdown-content{
@@ -511,9 +560,11 @@ body{
 
 .kpi-title{
   font-size:12px;
+  font-weight:600;
   color:var(--muted);
   text-transform:uppercase;
   letter-spacing:.5px;
+  margin-bottom:12px;
 }
 
 .kpi-value{
@@ -539,16 +590,128 @@ body{
   box-shadow:0 10px 28px rgba(0,0,0,.08);
 }
 
-/* TITLE */
-.card-title{
-  font-size:13px;
-  font-weight:600;
-  margin-bottom:10px;
-
-  color:var(--text);
-  border-bottom:1px solid #e5e7eb;
-  padding-bottom:6px;
+.kpi-wrapper{
+  background:#ffffff;
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.05);
 }
+
+/* WRAPPER TABLE (BIAR ADA CARD FEEL) */
+.kpi-table-container{
+  overflow:auto;
+  border-radius:14px;
+  box-shadow:0 6px 25px rgba(0,0,0,0.06);
+  background:#ffffff;
+}
+
+/* TABLE */
+.kpi-table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+  min-width:900px;
+}
+
+/* HEADER */
+.kpi-table th{
+  position:sticky;
+  top:0;
+  z-index:1;
+  background:#5A84B2;
+  color:#E1FFFB;
+  padding:12px;
+  font-weight:600;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+/* HEADER ROUND */
+.kpi-table th:first-child{
+  border-top-left-radius:14px;
+}
+.kpi-table th:last-child{
+  border-top-right-radius:14px;
+}
+
+/* KPI NAME (LEFT STICKY) */
+.kpi-name{
+  position:sticky;
+  left:0;
+  z-index:1;
+  background:#f8fafc;
+  font-weight:600;
+  border-right:1px solid #eee;
+}
+
+/* CELL */
+.kpi-table td{
+  padding:12px;
+  text-align:center;
+  border-bottom:1px solid #f1f5f9;
+  transition:all 0.2s ease;
+}
+
+/* ROW HOVER */
+.kpi-table tr:hover td{
+  background:#f8fafc;
+}
+
+/* SUCCESS */
+.kpi-success{
+  background:#dcfce7;
+  color:#166534;
+  font-weight:600;
+  
+}
+
+/* FAIL */
+.kpi-fail{
+  background:#fee2e2;
+  color:#991b1b;
+ 
+}
+
+/* BOBOT */
+.kpi-bobot{
+  font-size:11px;
+  opacity:0.7;
+  margin-top:4px;
+}
+
+/* EMPTY */
+.kpi-empty{
+  padding:30px;
+  text-align:center;
+  color:#999;
+  font-size:14px;
+}
+
+/* SCROLL BAR MODERN */
+.kpi-table-container::-webkit-scrollbar{
+  height:8px;
+}
+.kpi-table-container::-webkit-scrollbar-thumb{
+  background:#cbd5f5;
+  
+}
+.kpi-page{
+  flex:1;
+  min-width:140px;
+
+  background: var(--card);
+  padding: 8px 10px;
+  border-radius: 10px;
+
+  border: 1px solid rgba(226,232,240,0.8);
+  box-shadow: 0 2px 6px rgba(0,0,0,.06);
+
+  transition: all .2s ease;
+  position: relative;
+
+  animation: fadeIn .3s ease;
+}
+
 
 </style>
 </head>
@@ -606,6 +769,7 @@ body{
   <button class="tab-btn active" onclick="openTab('tab1', this)">Performance Scorecard</button>
   <button class="tab-btn" onclick="openTab('tab2', this)">Outlet Penetration</button>
   <button class="tab-btn" onclick="openTab('tab3', this)">Frontliner Deep Dive</button>
+  <button class="tab-btn" onclick="openTab('tab4', this)">Achievement</button>
 </div>
 
 
@@ -784,6 +948,34 @@ body{
 </div>
 
 
+<div id="tab4" class="tab-content">
+
+  <!-- FILTER TAB 4 -->
+  <div class="kpi-page" style="margin-bottom:10px;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+      <div class="dropdown">
+        <button onclick="toggleDropdown('tab4YearBox')">Tahun</button>
+        <div id="tab4YearBox" class="dropdown-content"></div>
+      </div>
+
+      <div class="dropdown">
+        <button onclick="toggleDropdown('tab4MonthBox')">Bulan</button>
+        <div id="tab4MonthBox" class="dropdown-content"></div>
+      </div>
+
+      <div class="dropdown">
+        <button onclick="toggleDropdown('tab4AreaBox')">Area</button>
+        <div id="tab4AreaBox" class="dropdown-content"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔥 HASIL KPI MASUK SINI -->
+  <div id="achievementContainer"></div>
+
+</div>
 <script>
 
 // TAB 3 FUNCTION - CARD GRID //
@@ -839,9 +1031,23 @@ function renderFLCard(){
   
   if(!FL_SELECTED){
   container.innerHTML = `
-    <div class="card" style="text-align:center;">
-      Silakan pilih Frontliner terlebih dahulu
-    </div>
+    <div style="
+  text-align:center;
+  padding:10px 12px;
+  border-radius:8px;
+
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.15);
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+
+  color:#64748b;
+  font-size:12px;
+
+  font-family:inherit;
+  line-height:1.4;
+">
+  👆 Pilih Frontliner terlebih dahulu
+</div>
   `;
   return;
 } 
@@ -1016,7 +1222,7 @@ const noo = tab3Filter(nooData);
       <div class="fl-kpi">
 
         <div class="fl-box">
-          <div class="val">${r.visits}</div>
+          <div class="val"style="color:blue;">${r.visits}</div>
           <div class="label">Total Visits</div>
         </div>
 
@@ -1026,12 +1232,12 @@ const noo = tab3Filter(nooData);
         </div>
 
         <div class="fl-box">
-          <div class="val">${r.conv.toFixed(1)}%</div>
+          <div class="val"style="color:#00B050;">${r.conv.toFixed(1)}%</div>
           <div class="label">Conversion</div>
         </div>
 
         <div class="fl-box">
-          <div class="val">Rp ${format(r.revenue)}</div>
+          <div class="val"style="color:#139EBF;">Rp ${format(r.revenue)}</div>
           <div class="label">Total Revenue</div>
         </div>
 
@@ -1387,6 +1593,294 @@ function initTab3Filter(data){
   };
 }
 // END DARI TAB 3 
+
+// ISI DARI TAB 4
+function initTab4Filter(data){
+
+  const yearBox = document.getElementById("tab4YearBox");
+  const monthBox = document.getElementById("tab4MonthBox");
+  const areaBox = document.getElementById("tab4AreaBox");
+
+  const years = [...new Set(data.map(r=>{
+    const d = safeDate(r["Tanggal"]);
+    return d ? d.getFullYear() : null;
+  }).filter(v=>v))];
+
+  const areas = [...new Set(data.map(r=>r["Area"]).filter(v=>v))];
+
+  yearBox.innerHTML = years.map(y=>`
+    <label><input type="checkbox" value="${y}">${y}</label>
+  `).join("");
+
+  monthBox.innerHTML = Array.from({length:12},(_,i)=>`
+    <label><input type="checkbox" value="${i+1}">${i+1}</label>
+  `).join("");
+
+  areaBox.innerHTML = areas.map(a=>`
+    <label><input type="checkbox" value="${a}">${a}</label>
+  `).join("");
+
+  // EVENT
+  ["tab4YearBox","tab4MonthBox","tab4AreaBox"].forEach(id=>{
+    document.querySelectorAll(`#${id} input`).forEach(cb=>{
+      cb.onchange = ()=>{
+        TAB4_FILTER.year = getSelected("tab4YearBox");
+        TAB4_FILTER.month = getSelected("tab4MonthBox");
+        TAB4_FILTER.area = getSelected("tab4AreaBox");
+
+        renderAchievement();
+      };
+    });
+  });
+}
+
+function tab4Filter(data){
+  return data.filter(r=>{
+
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return false;
+
+    const y = d.getFullYear().toString();
+    const m = (d.getMonth()+1).toString();
+    const area = (r["Area"]||"").trim();
+
+    if(TAB4_FILTER.year.length && !TAB4_FILTER.year.includes(y)) return false;
+    if(TAB4_FILTER.month.length && !TAB4_FILTER.month.includes(m)) return false;
+    if(TAB4_FILTER.area.length && !TAB4_FILTER.area.includes(area)) return false;
+
+    return true;
+  });
+}
+
+
+function formatFull(num){
+  return Number(num || 0).toLocaleString("id-ID");
+}
+
+
+function renderAchievement(){
+
+  const container = document.getElementById("achievementContainer");
+  if(!container) return;
+
+  // =========================
+  // WAJIB PILIH AREA
+  // =========================
+  if(!TAB4_FILTER.area || TAB4_FILTER.area.length === 0){
+    container.innerHTML = `
+      <div class="kpi-empty">
+        Pilih Area terlebih dahulu
+      </div>
+    `;
+    return;
+  }
+
+  const dataFiltered = tab4Filter(DATA);
+  const pdFiltered   = tab4Filter(PD);
+
+  const map = {};
+  const tlMap = {};
+  const tlMembers = {};
+
+  // =========================
+  // CALL (PD)
+  // =========================
+  pdFiltered.forEach(r=>{
+
+    const fl = r["Frontliner"] || "Unknown";
+    const tl = r["Teamleader"] || "-";
+    const outlet = r["Outlet ID"] || "-";
+
+    if(!map[fl]){
+      map[fl] = { tl, callSet:new Set(), ecSet:new Set(), sales:0, days:new Set() };
+    }
+
+    if(!tlMap[tl]){
+      tlMap[tl] = { callSet:new Set(), ecSet:new Set(), sales:0, days:new Set() };
+      tlMembers[tl] = new Set();
+    }
+
+    tlMembers[tl].add(fl);
+
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+
+    const dateKey = d.toISOString().split("T")[0];
+    const key = dateKey + "_" + outlet;
+
+    map[fl].callSet.add(key);
+    map[fl].days.add(dateKey);
+
+    tlMap[tl].callSet.add(key);
+    tlMap[tl].days.add(dateKey);
+  });
+
+  // =========================
+  // EC + SALES
+  // =========================
+  dataFiltered.forEach(r=>{
+
+    const fl = r["Frontliner"] || "Unknown";
+    const tl = r["Teamleader"] || "-";
+    const outlet = r["Outlet ID"] || "-";
+
+    let val = Number((r["Value"]||"0").replace(/[^0-9]/g,''))||0;
+
+    if(!map[fl]){
+      map[fl] = { tl, callSet:new Set(), ecSet:new Set(), sales:0, days:new Set() };
+    }
+
+    if(!tlMap[tl]){
+      tlMap[tl] = { callSet:new Set(), ecSet:new Set(), sales:0, days:new Set() };
+      tlMembers[tl] = new Set();
+    }
+
+    tlMembers[tl].add(fl);
+
+    const d = safeDate(r["Tanggal"]);
+    if(!d) return;
+
+    const dateKey = d.toISOString().split("T")[0];
+    const key = dateKey + "_" + outlet;
+
+    map[fl].ecSet.add(key);
+    map[fl].sales += val;
+
+    tlMap[tl].ecSet.add(key);
+    tlMap[tl].sales += val;
+  });
+
+  const flList = Object.entries(map);
+  const tlList = Object.entries(tlMap);
+
+  // =========================
+  // BOBOT TL
+  // =========================
+  function getTLBobot(type,val,member){
+    if(type==="call") return val >= 700*member ? 10 : 0;
+    if(type==="ec"){
+      if(val >= 375*member) return 50;
+      if(val >= 300*member) return 40;
+      if(val >= 250*member) return 30;
+      return 0;
+    }
+    if(type==="sales"){
+      if(val >= 50000000*member) return 100;
+      if(val >= 35000000*member) return 80;
+      if(val >= 25000000*member) return 65;
+      return 0;
+    }
+    if(type==="hk"){
+      return val >= 25*member ? 10 : 0;
+    }
+    return 0;
+  }
+
+  // =========================
+  // BUILD TABLE
+  // =========================
+  let html = `
+  <div class="kpi-wrapper">
+
+    <div class="kpi-title">
+      KPI Achievement Dashboard
+    </div>
+
+    <div class="kpi-table-container">
+    <table class="kpi-table">
+  `;
+
+  // HEADER
+  html += `
+  <tr>
+    <th>KPI</th>
+    ${tlList.map(([tl])=>`<th>${tl}</th>`).join("")}
+    ${flList.map(([fl])=>`<th>${fl}</th>`).join("")}
+  </tr>
+  `;
+
+  function row(type){
+
+    let row = `<tr><td class="kpi-name">${type.toUpperCase()}</td>`;
+
+    // TL
+    tlList.forEach(([tl,v])=>{
+      const member = tlMembers[tl]?.size || 1;
+
+      let val = 0;
+      if(type==="call") val = v.callSet.size;
+      if(type==="ec") val = v.ecSet.size;
+      if(type==="sales") val = v.sales;
+      if(type==="hk") val = v.days.size;
+
+      const bobot = getTLBobot(type,val,member);
+
+      row += `
+      <td class="${bobot>0 ? 'kpi-success' : 'kpi-fail'}">
+        ${type==="sales" ? "Rp "+formatFull(val) : val}
+        <div class="kpi-bobot">${bobot}%</div>
+      </td>`;
+    });
+
+    // FL
+    flList.forEach(([_,v])=>{
+
+      let val = 0;
+      let bobot = 0;
+
+      if(type==="call"){
+        val = v.callSet.size;
+        bobot = val>=700?10:0;
+      }
+
+      if(type==="ec"){
+        val = v.ecSet.size;
+        if(val>=375) bobot=50;
+        else if(val>=300) bobot=40;
+        else if(val>=250) bobot=30;
+      }
+
+      if(type==="sales"){
+        val = v.sales;
+        if(val>=50000000) bobot=100;
+        else if(val>=35000000) bobot=80;
+        else if(val>=25000000) bobot=65;
+      }
+
+      if(type==="hk"){
+        val = v.days.size;
+        bobot = val>=25?10:0;
+      }
+
+      row += `
+      <td class="${bobot>0 ? 'kpi-success' : 'kpi-fail'}">
+        ${type==="sales" ? "Rp "+formatFull(val) : val}
+        <div class="kpi-bobot">${bobot}%</div>
+      </td>`;
+    });
+
+    row += "</tr>";
+    return row;
+  }
+
+  html += row("call");
+  html += row("ec");
+  html += row("sales");
+  html += row("hk");
+
+  html += `
+    </table>
+    </div>
+  </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+
+// END DARI TAB 4
+
+
 let SORT_INIT = false;
 
 function baseFilter(arr){
@@ -1513,9 +2007,23 @@ function openTab(tabId, el){
 
   if(container){
     container.innerHTML = `
-      <div class="card" style="text-align:center;color:#64748b;">
-        👆 Pilih Frontliner terlebih dahulu
-      </div>
+     <div style="
+  text-align:center;
+  padding:10px 12px;
+  border-radius:8px;
+
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.15);
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+
+  color:#64748b;
+  font-size:12px;
+
+  font-family:inherit;
+  line-height:1.4;
+">
+  👆 Pilih Frontliner terlebih dahulu
+</div>
     `;
   }
 
@@ -1593,6 +2101,11 @@ let color = "";
 let YEAR_FILTER = new Date().getFullYear();
 let TAB3_FILTER = {
   year: [],
+};
+let TAB4_FILTER = {
+  year: [],
+  month: [],
+  area: []
 };
 
 Papa.parse("noo.csv?v=" + new Date().getTime(), {
@@ -1767,6 +2280,7 @@ function loadCSV() {
 		  initTeamleader(DATA); 
 		  initFrontlinerFilter(DATA); // 🔥 INI YANG HILANG// 🔥 TAMBAH INI
           initTab3YearFilter(DATA); // ✅ WAJIB
+		  initTab4Filter(DATA);
 		  render();
         }
       });
